@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type SyntheticEvent } from 'react';
 
 function safeNext(raw: string | null): string {
   if (raw && raw.startsWith('/') && !raw.startsWith('//')) return raw;
@@ -11,7 +11,7 @@ export default function LoginForm() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
-  async function onSubmit(event: FormEvent) {
+  async function onSubmit(event: SyntheticEvent) {
     event.preventDefault();
     setBusy(true);
     setError('');
@@ -35,14 +35,15 @@ export default function LoginForm() {
   }
 
   return (
-    <form className="mt-8 space-y-5" onSubmit={(event) => void onSubmit(event)} aria-busy={busy}>
+    <form className="mt-6 space-y-4 sm:space-y-5" onSubmit={(event) => void onSubmit(event)} aria-busy={busy}>
       <label className="block">
         <span className="mb-2 block font-headline text-xs font-extrabold uppercase tracking-[0.14em]">
           Tên đăng nhập
         </span>
         <input
-          className="input-box"
+          className="input-box min-h-11 text-base sm:text-sm"
           name="username"
+          placeholder="admin"
           autoComplete="username"
           value={username}
           onChange={(event) => setUsername(event.target.value)}
@@ -54,8 +55,9 @@ export default function LoginForm() {
           Mật khẩu
         </span>
         <input
-          className="input-box"
+          className="input-box min-h-11 text-base sm:text-sm"
           type="password"
+          placeholder="••••••••"
           name="password"
           autoComplete="current-password"
           value={password}
@@ -64,12 +66,14 @@ export default function LoginForm() {
         />
       </label>
       {error ? (
-        <p className="field-error" role="alert">
-          {error}
-        </p>
+        <div className="rounded-[var(--radius)] border border-[var(--tad-red)] bg-[color-mix(in_srgb,var(--tad-red)_10%,var(--card))] p-3">
+          <p className="field-error m-0 text-xs font-bold" role="alert">
+            {error}
+          </p>
+        </div>
       ) : null}
-      <button type="submit" className="btn-primary w-full" disabled={busy}>
-        {busy ? 'Đang đăng nhập…' : 'Đăng nhập'}
+      <button type="submit" className="btn-primary min-h-12 w-full text-xs font-bold sm:text-sm" disabled={busy}>
+        {busy ? 'Đang đăng nhập…' : 'Đăng nhập vào hệ thống'}
       </button>
     </form>
   );

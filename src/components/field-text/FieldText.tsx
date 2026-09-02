@@ -13,8 +13,9 @@ export default function FieldText({ id, labelledBy, value, maxChars, error, onCh
     <div>
       <input
         id={id}
-        className="input-box"
+        className="input-box text-base sm:text-sm"
         type="text"
+        placeholder="Nhập câu trả lời của bạn…"
         value={value}
         maxLength={maxChars ?? undefined}
         aria-labelledby={labelledBy}
@@ -22,16 +23,24 @@ export default function FieldText({ id, labelledBy, value, maxChars, error, onCh
         aria-describedby={error ? errorId : undefined}
         onChange={(event) => onChange(event.target.value)}
       />
-      {maxChars != null ? (
-        <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-          {value.length}/{maxChars}
-        </p>
-      ) : null}
-      {error ? (
-        <p id={errorId} className="field-error" role="alert">
-          {error}
-        </p>
-      ) : null}
+      <div className="mt-2 flex items-center justify-between">
+        {error ? (
+          <p id={errorId} className="field-error m-0" role="alert">
+            {error}
+          </p>
+        ) : (
+          <span />
+        )}
+        {maxChars != null ? (
+          <span
+            className={`font-mono text-xs ${
+              value.length >= maxChars ? 'font-bold text-[var(--tad-red)]' : 'text-[var(--muted-foreground)]'
+            }`}
+          >
+            {value.length}/{maxChars}
+          </span>
+        ) : null}
+      </div>
     </div>
   );
 }

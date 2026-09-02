@@ -24,31 +24,55 @@ export default function FormCard({ form, onDelete }: Props) {
   }
 
   return (
-    <article className="brutalist-card rounded-[var(--radius)] border border-[var(--border)] bg-[var(--card)] p-5">
-      <StatusBadge status={form.status} />
-      <h2 className="mt-3 font-headline text-xl font-extrabold">{form.title}</h2>
-      <p className="mt-2 font-mono text-xs text-[var(--muted-foreground)]">/q/{form.slug}</p>
-      <p className="mt-1 text-sm text-[var(--muted-foreground)]">
-        {form.responseCount} phản hồi · {formatViDate(form.updatedAt)}
-      </p>
-      <div className="mt-5 flex flex-wrap gap-2">
-        <a href={`/admin/f/${form.id}`} className="btn-ghost text-sm">
+    <article className="brutalist-card flex flex-col justify-between rounded-[var(--radius)] border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
+      <div>
+        <div className="flex items-center justify-between gap-2">
+          <StatusBadge status={form.status} />
+          <span className="text-[11px] text-[var(--muted-foreground)]">
+            {formatViDate(form.updatedAt)}
+          </span>
+        </div>
+        <h2 className="mt-3 font-headline text-lg font-extrabold text-[var(--tad-ink)] line-clamp-2 md:text-xl">
+          {form.title}
+        </h2>
+        <div className="mt-2 flex items-center justify-between rounded border border-[var(--border)] bg-[var(--tad-paper)] px-2.5 py-1.5 font-mono text-xs">
+          <span className="truncate text-[var(--muted-foreground)]">/q/{form.slug}</span>
+          <button
+            type="button"
+            className="ml-2 inline-flex shrink-0 items-center gap-1 font-headline text-[10px] font-bold text-[var(--tad-red)] hover:underline"
+            onClick={() => void copy()}
+            title="Sao chép link khảo sát"
+          >
+            <IconCopy className="h-3 w-3" />
+            {copied ? 'Đã chép' : 'Chép'}
+          </button>
+        </div>
+        <div className="mt-3 flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
+          <span className="font-headline font-bold text-[var(--tad-ink)]">
+            {form.responseCount}
+          </span>{' '}
+          phản hồi đã nhận
+        </div>
+      </div>
+      <div className="mt-5 grid grid-cols-2 gap-2 border-t border-[var(--border)] pt-4">
+        <a
+          href={`/admin/f/${form.id}`}
+          className="btn-primary flex min-h-10 items-center justify-center text-center text-xs font-bold"
+        >
           Chỉnh sửa
         </a>
-        <a href={`/admin/f/${form.id}/responses`} className="btn-ghost text-sm">
+        <a
+          href={`/admin/f/${form.id}/responses`}
+          className="btn-ghost flex min-h-10 items-center justify-center border border-[var(--border)] text-center text-xs font-bold hover:border-[var(--tad-ink)]"
+        >
           Phản hồi ({form.responseCount})
         </a>
         <button
           type="button"
-          className="btn-ghost text-sm"
-          aria-pressed={copied}
-          onClick={() => void copy()}
+          className="col-span-2 inline-flex min-h-9 items-center justify-center text-xs font-medium text-[var(--muted-foreground)] hover:text-[var(--tad-red)]"
+          onClick={onDelete}
         >
-          <IconCopy className="mr-2 h-4 w-4" />
-          {copied ? 'Đã sao chép' : 'Sao chép link'}
-        </button>
-        <button type="button" className="btn-ghost text-sm" onClick={onDelete}>
-          Xóa
+          Xóa khảo sát này
         </button>
       </div>
     </article>

@@ -7,7 +7,7 @@ const form = getFormBySlug(Astro.params.slug ?? '');
 if (!form || form.status !== 'published') return Astro.redirect('/404');
 ---
 
-<PublicLayout title={`${form.title} — TADQuiz`} description={form.description || form.title} footer={false}>
+<PublicLayout title={`${form.title} — TADQuiz`} description={form.description || form.title}>
   <main id="main">
     <QuizStepper client:load form={form} />
   </main>

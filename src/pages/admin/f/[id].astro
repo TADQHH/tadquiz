@@ -10,9 +10,29 @@ if (!form) return Astro.redirect('/404');
 
 <AdminLayout title={`${form.title} — Editor — TADQuiz`}>
   <main id="main">
-    <div class="page-shell pt-8">
-      <p class="eyebrow">Chỉnh sửa form</p>
-      <h1 class="section-title">{form.title}</h1>
+    <div class="page-shell pt-6 md:pt-8">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <a
+            href="/admin"
+            class="inline-flex min-h-8 items-center gap-1 font-headline text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)] hover:text-[var(--tad-red)]"
+          >
+            ← Về danh sách khảo sát
+          </a>
+          <div class="mt-1">
+            <p class="eyebrow">Chỉnh sửa khảo sát</p>
+            <h1 class="section-title truncate">{form.title}</h1>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <a
+            href={`/admin/f/${form.id}/responses`}
+            class="btn-ghost flex min-h-10 items-center justify-center border border-[var(--border)] px-4 text-xs font-bold hover:border-[var(--tad-ink)]"
+          >
+            Xem phản hồi ({form.responseCount})
+          </a>
+        </div>
+      </div>
     </div>
     <FormEditor client:load form={form} />
   </main>

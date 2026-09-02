@@ -1,3 +1,5 @@
+import { IconCheck } from '../icons/Icons';
+
 type Props = {
   name: string;
   options: string[];
@@ -42,7 +44,7 @@ export default function FieldChoice({
           const inputId = `${name}-${index}`;
           return (
             <li key={`${index}-${option}`}>
-              <label className="opt-card cursor-pointer" data-selected={checked}>
+              <label className="opt-card cursor-pointer group" data-selected={checked}>
                 <input
                   id={inputId}
                   className="sr-only"
@@ -52,10 +54,22 @@ export default function FieldChoice({
                   checked={checked}
                   onChange={() => toggle(option)}
                 />
+                <span
+                  className={`flex h-5 w-5 shrink-0 items-center justify-center border transition-colors ${
+                    multiple ? 'rounded-[3px]' : 'rounded-full'
+                  } ${
+                    checked
+                      ? 'border-[var(--tad-red)] bg-[var(--tad-red)] text-white'
+                      : 'border-[var(--border)] bg-[var(--card)] group-hover:border-[var(--tad-red)]'
+                  }`}
+                  aria-hidden="true"
+                >
+                  {checked ? <IconCheck className="h-3.5 w-3.5" /> : null}
+                </span>
                 <kbd className="hidden md:inline-flex" aria-hidden="true">
                   {letter(index)}
                 </kbd>
-                <span>{option}</span>
+                <span className="flex-1 break-words font-medium text-[var(--tad-ink)]">{option}</span>
               </label>
             </li>
           );
