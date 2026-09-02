@@ -1,0 +1,73 @@
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-headline {
+  font-family: var(--font-headline);
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+@layer components {
+  .page-shell {
+    width: 100%;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding-inline: 1.25rem;
+    min-inline-size: 0;
+  }
+
+  .page-shell > *,
+  .page-shell :where([class~='grid'] > *),
+  .section-title,
+  .lede,
+  .eyebrow {
+    min-inline-size: 0;
+  }
+
+  .eyebrow {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    line-height: 1.4;
+    text-transform: uppercase;
+    color: var(--primary);
+    overflow-wrap: anywhere;
+  }
+
+  .section-title {
+    margin: 0.35rem 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    overflow-wrap: anywhere;
+  }
+
+  [data-theme='tad'] .section-title {
+    font-family: var(--font-headline);
+    text-transform: uppercase;
+  }
+
+  [data-theme='hoh'] .section-title {
+    font-family: var(--font-serif);
+    letter-spacing: -0.02em;
+  }
+
+  .lede {
+    margin: 1rem 0 0;
+    max-width: 40rem;
+    color: var(--muted-foreground);
+    font-size: 1.05rem;
+    overflow-wrap: anywhere;
+  }
+
+  @media (min-width: 768px) {
+    .page-shell {
+      padding-inline: 2rem;
+    }
+  }
+}

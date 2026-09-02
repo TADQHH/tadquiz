@@ -1,0 +1,22 @@
+---
+import '../../styles/global.css';
+import { getFormBySlug } from '../../db/forms.mjs';
+
+const form = getFormBySlug(Astro.params.slug ?? '');
+if (!form || form.status !== 'published') return Astro.redirect('/404');
+---
+
+<!doctype html>
+<html lang="vi" data-theme="tad">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{form.title} — TADQuiz</title>
+  </head>
+  <body>
+    <main id="main" class="page-shell py-12">
+      <h1 class="section-title">{form.title}</h1>
+      <p class="lede">{form.questions.length} câu hỏi — UI stepper sẽ được ghé tại đây.</p>
+    </main>
+  </body>
+</html>

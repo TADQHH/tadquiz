@@ -1,0 +1,22 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "${WEB_PORT:-8080}:4321"
+    environment:
+      DATABASE_PATH: /data/tadquiz.sqlite
+      # Set these to override the auto-generated .env (gen-env skips keys
+      # already present in the process environment):
+      # SITE_URL: https://quiz.example.com
+      # SESSION_SECRET: <long-random-string>
+      # Optional first-run admin bootstrap:
+      # TADQUIZ_ADMIN_USER: admin
+      # TADQUIZ_ADMIN_PASSWORD: change-me-please
+    volumes:
+      - tadquiz-data:/data
+    restart: unless-stopped
+
+volumes:
+  tadquiz-data:

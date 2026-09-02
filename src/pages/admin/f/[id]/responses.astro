@@ -1,0 +1,27 @@
+---
+// Placeholder shell — UI replaced by design implementer.
+import '../../../../styles/global.css';
+import { getForm } from '../../../../db/forms.mjs';
+import { listResponses } from '../../../../db/responses.mjs';
+
+const id = Number.parseInt(String(Astro.params.id ?? ''), 10);
+const form = Number.isInteger(id) ? getForm(id) : null;
+if (!form) return Astro.redirect('/404');
+const rows = listResponses(form.id);
+---
+
+<!doctype html>
+<html lang="vi" data-theme="tad">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{form.title} — Phản hồi — TADQuiz</title>
+  </head>
+  <body>
+    <main id="main" class="page-shell py-12">
+      <h1 class="section-title">{rows.length} phản hồi</h1>
+      <p><a href={`/api/forms/${form.id}/responses.csv`}>Xuất CSV</a></p>
+    </main>
+  </body>
+</html>

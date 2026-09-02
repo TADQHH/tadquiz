@@ -1,0 +1,41 @@
+{
+  "name": "tadquiz",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "TADQuiz — quiz/survey form platform with custom-slug forms, admin panel, TAD design system.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "npm run gen:env && astro dev --host",
+    "build": "astro build",
+    "preview": "npm run gen:env && astro preview --host",
+    "check": "astro check && node scripts/check-line-limit.mjs",
+    "lines": "node scripts/check-line-limit.mjs",
+    "gen:env": "node scripts/gen-env.mjs",
+    "admin": "node scripts/create-admin.mjs",
+    "start": "node dist/server/entry.mjs",
+    "test": "npm run gen:env && node --test tests/unit/*.test.ts",
+    "test:e2e": "node scripts/smoke-e2e.mjs"
+  },
+  "dependencies": {
+    "@astrojs/node": "^9.3.0",
+    "@astrojs/react": "^4.3.0",
+    "@tailwindcss/vite": "^4.1.12",
+    "astro": "^5.13.2",
+    "better-sqlite3": "^12.4.1",
+    "clsx": "^2.1.1",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss": "^4.1.12"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "typescript": "^5.9.2"
+  }
+}

@@ -1,0 +1,26 @@
+---
+// Placeholder shell — UI replaced by design implementer.
+import '../styles/global.css';
+import { listForms } from '../db/forms.mjs';
+const forms = listForms().filter((f) => f.status === 'published');
+---
+
+<!doctype html>
+<html lang="vi" data-theme="tad">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TADQuiz</title>
+  </head>
+  <body>
+    <main id="main" class="page-shell py-12">
+      <h1 class="section-title">TADQuiz</h1>
+      <ul>
+        {forms.map((f) => (
+          <li><a href={`/q/${f.slug}`}>{f.title}</a></li>
+        ))}
+      </ul>
+      <p><a href="/admin">Admin</a></p>
+    </main>
+  </body>
+</html>

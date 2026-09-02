@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.astro/
+.env
+data/
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+.DS_Store
