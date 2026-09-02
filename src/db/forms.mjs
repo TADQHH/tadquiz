@@ -30,7 +30,8 @@ function rowToForm(row, questions = []) {
     title: row.title,
     description: row.description,
     status: row.status,
-    responseCount: questions.__count ?? row.response_count ?? 0,
+    responseCount: row.response_count ?? 0,
+    questionCount: row.question_count ?? questions.length,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     questions,
@@ -86,7 +87,14 @@ export function replaceQuestions(formId, questions) {
 /** @param {number} id */
 export function getForm(id) {
   const db = getDb();
-  const row = db.prepare('SELECT * FROM forms WHERE id = ?').get(id);
+  const row = db
+    .prepare(
+      `SELECT f.*,
+        (SELECT COUNT(*) FROM responses r WHERE r.form_id = f.id) AS response_count,
+        (SELECT COUNT(*) FROM questions q WHERE q.form_id = f.id) AS question_count
+       FROM forms f WHERE f.id = ?`,
+    )
+    .get(id);
   if (!row) return null;
   const questions = db
     .prepare('SELECT * FROM questions WHERE form_id = ? ORDER BY position, id')
@@ -98,7 +106,14 @@ export function getForm(id) {
 /** @param {string} slug */
 export function getFormBySlug(slug) {
   const db = getDb();
-  const row = db.prepare('SELECT * FROM forms WHERE slug = ?').get(slug);
+  const row = db
+    .prepare(
+      `SELECT f.*,
+        (SELECT COUNT(*) FROM responses r WHERE r.form_id = f.id) AS response_count,
+        (SELECT COUNT(*) FROM questions q WHERE q.form_id = f.id) AS question_count
+       FROM forms f WHERE f.slug = ?`,
+    )
+    .get(slug);
   if (!row) return null;
   const questions = db
     .prepare('SELECT * FROM questions WHERE form_id = ? ORDER BY position, id')
@@ -110,9 +125,10 @@ export function getFormBySlug(slug) {
 export function listForms() {
   return getDb()
     .prepare(
-      `SELECT f.*, COUNT(r.id) AS response_count
-       FROM forms f LEFT JOIN responses r ON r.form_id = f.id
-       GROUP BY f.id ORDER BY f.updated_at DESC`,
+      `SELECT f.*,
+        (SELECT COUNT(*) FROM responses r WHERE r.form_id = f.id) AS response_count,
+        (SELECT COUNT(*) FROM questions q WHERE q.form_id = f.id) AS question_count
+       FROM forms f ORDER BY f.updated_at DESC`,
     )
     .all()
     .map((row) => rowToForm(row));

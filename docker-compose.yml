@@ -11,9 +11,6 @@ services:
       # already present in the process environment):
       # SITE_URL: https://quiz.example.com
       # SESSION_SECRET: <long-random-string>
-      # Optional first-run admin bootstrap:
-      # TADQUIZ_ADMIN_USER: admin
-      # TADQUIZ_ADMIN_PASSWORD: change-me-please
     volumes:
       - tadquiz-data:/data
     restart: unless-stopped

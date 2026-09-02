@@ -1,18 +1,14 @@
 ---
-import '../styles/global.css';
+import PublicLayout from '../layouts/PublicLayout.astro';
 ---
 
-<!doctype html>
-<html lang="vi" data-theme="tad">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>404 — TADQuiz</title>
-  </head>
-  <body>
-    <main id="main" class="page-shell py-12">
+<PublicLayout title="404 — TADQuiz" description="Không tìm thấy trang." noindex={true}>
+  <main id="main" class="page-shell flex min-h-[70dvh] items-center py-16">
+    <div>
+      <p class="eyebrow">Lỗi</p>
       <h1 class="section-title">404</h1>
       <p class="lede">Không tìm thấy trang bạn cần.</p>
-    </main>
-  </body>
-</html>
+      <a href="/" class="btn-primary mt-8">Về trang chủ</a>
+    </div>
+  </main>
+</PublicLayout>

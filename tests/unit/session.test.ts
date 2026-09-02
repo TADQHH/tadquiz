@@ -30,6 +30,6 @@ test('hết hạn → null', () => {
 });
 
 test('payload thiếu field → null', () => {
-  const bad = signSession({ nope: true }, SECRET);
+  const bad = signSession({ nope: true } as never, SECRET);
   assert.equal(verifySession(bad, SECRET), null);
 });

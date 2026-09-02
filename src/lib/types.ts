@@ -55,6 +55,7 @@ export interface FormSummary {
   description: string;
   status: FormStatus;
   responseCount: number;
+  questionCount: number;
   createdAt: string;
   updatedAt: string;
 }

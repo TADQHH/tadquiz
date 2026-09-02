@@ -9,9 +9,6 @@ import {
 } from '../../../db/forms.mjs';
 import { validateFormPayload } from '../../../lib/form-validate';
 
-interface Params {
-  id: string;
-}
 
 function parseId(raw: string | undefined): number | null {
   const id = Number.parseInt(String(raw ?? ''), 10);

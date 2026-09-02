@@ -1,5 +1,6 @@
 ---
-import '../../../styles/global.css';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import FormEditor from '../../../components/form-editor/FormEditor.tsx';
 import { getForm } from '../../../db/forms.mjs';
 
 const id = Number.parseInt(String(Astro.params.id ?? ''), 10);
@@ -7,18 +8,12 @@ const form = Number.isInteger(id) ? getForm(id) : null;
 if (!form) return Astro.redirect('/404');
 ---
 
-<!doctype html>
-<html lang="vi" data-theme="tad">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex, nofollow" />
-    <title>{form.title} — Editor — TADQuiz</title>
-  </head>
-  <body>
-    <main id="main" class="page-shell py-12">
+<AdminLayout title={`${form.title} — Editor — TADQuiz`}>
+  <main id="main">
+    <div class="page-shell pt-8">
+      <p class="eyebrow">Chỉnh sửa form</p>
       <h1 class="section-title">{form.title}</h1>
-      <p class="lede">Form editor sẽ được ghé tại đây (PUT /api/forms/{form.id}).</p>
-    </main>
-  </body>
-</html>
+    </div>
+    <FormEditor client:load form={form} />
+  </main>
+</AdminLayout>

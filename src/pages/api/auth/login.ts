@@ -23,8 +23,9 @@ export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
   }
 
   const admin = findByUsername(String(body.username));
-  const ok = admin !== undefined && verifyPassword(String(body.password), admin.password_hash);
-  if (!ok) return apiError('Tên đăng nhập hoặc mật khẩu không đúng.', 401);
+  if (admin === undefined || !verifyPassword(String(body.password), admin.password_hash)) {
+    return apiError('Tên đăng nhập hoặc mật khẩu không đúng.', 401);
+  }
 
   const ttl = envInt('SESSION_TTL_HOURS', 72);
   const token = createSessionToken(admin.id, admin.username, ttl, requireSessionSecret());

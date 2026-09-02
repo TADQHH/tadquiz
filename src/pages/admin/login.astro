@@ -1,19 +1,23 @@
 ---
-import '../../styles/global.css';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import LoginForm from '../../components/login-form/LoginForm.tsx';
 ---
 
-<!doctype html>
-<html lang="vi" data-theme="tad">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex, nofollow" />
-    <title>Đăng nhập — TADQuiz</title>
-  </head>
-  <body>
-    <main id="main" class="page-shell py-12">
-      <h1 class="section-title">Đăng nhập</h1>
-      <p class="lede">Form đăng nhập sẽ được ghé tại đây (POST /api/auth/login).</p>
-    </main>
-  </body>
-</html>
+<BaseLayout title="Đăng nhập — TADQuiz" description="Đăng nhập quản trị TADQuiz." noindex={true}>
+  <a class="skip-link" href="#main">Bỏ qua nội dung</a>
+  <main id="main" class="grid min-h-[100dvh] md:grid-cols-2">
+    <section class="tad-slash hidden min-h-[100dvh] flex-col justify-end p-10 md:flex">
+      <p class="font-display text-6xl font-extrabold tracking-tight text-white">TADQUIZ</p>
+      <p class="mt-4 max-w-sm text-white/80">Khảo sát gọn, dữ liệu sạch — The Anecdotist.</p>
+    </section>
+    <section class="flex items-center justify-center p-6 md:p-12">
+      <div
+        class="w-full max-w-md border-2 border-[var(--tad-black)] bg-[var(--card)] p-8 shadow-[8px_8px_0_var(--tad-red)]"
+      >
+        <p class="eyebrow">Quản trị</p>
+        <h1 class="section-title text-[clamp(1.8rem,4vw,2.6rem)]">Đăng nhập</h1>
+        <LoginForm client:load />
+      </div>
+    </section>
+  </main>
+</BaseLayout>

@@ -1,23 +1,28 @@
 ---
-// Placeholder shell — UI replaced by design implementer.
-import '../../../styles/global.css';
+import PublicLayout from '../../../layouts/PublicLayout.astro';
 import { getFormBySlug } from '../../../db/forms.mjs';
 
 const form = getFormBySlug(Astro.params.slug ?? '');
 if (!form) return Astro.redirect('/404');
 ---
 
-<!doctype html>
-<html lang="vi" data-theme="tad">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Đã gửi — {form.title}</title>
-  </head>
-  <body>
-    <main id="main" class="page-shell py-12">
-      <h1 class="section-title">Đã gửi</h1>
-      <p class="lede">Cảm ơn bạn đã hoàn thành "{form.title}".</p>
-    </main>
-  </body>
-</html>
+<PublicLayout title={`Đã gửi — ${form.title}`} description="Phản hồi đã được ghi nhận.">
+  <main id="main" class="page-shell flex min-h-[70dvh] items-center justify-center py-16">
+    <article
+      class="w-full max-w-lg border-2 border-[var(--tad-black)] bg-[var(--card)] p-8 text-center shadow-[8px_8px_0_var(--tad-red)]"
+    >
+      <span
+        class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--tad-red)] text-white"
+        aria-hidden="true"
+      >
+        <svg viewBox="0 0 24 24" class="h-7 w-7">
+          <path fill="currentColor" d="M9.2 16.6 4.8 12.2l-1.4 1.4 5.8 5.8 12-12-1.4-1.4z"></path>
+        </svg>
+      </span>
+      <p class="eyebrow mt-6">Phản hồi đã gửi</p>
+      <h1 class="section-title">Cảm ơn bạn</h1>
+      <p class="lede mx-auto">Chúng tôi đã nhận phản hồi cho “{form.title}”.</p>
+      <a href="/" class="btn-primary mt-8">Về trang chủ</a>
+    </article>
+  </main>
+</PublicLayout>

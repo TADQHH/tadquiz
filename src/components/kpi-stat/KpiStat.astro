@@ -1,0 +1,13 @@
+---
+type Props = {
+  label: string;
+  value: string;
+};
+
+const { label, value } = Astro.props;
+---
+
+<article class="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--card)] p-5">
+  <p class="eyebrow">{label}</p>
+  <p class="mt-2 font-headline text-2xl font-extrabold">{value}</p>
+</article>

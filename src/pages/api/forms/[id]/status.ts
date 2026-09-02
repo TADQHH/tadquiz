@@ -14,7 +14,9 @@ export const POST: APIRoute = async (context) => {
 
   const body = await readJson<{ status?: string }>(context.request);
   const status = String(body?.status ?? '');
-  if (!STATUSES.has(status)) return apiError('status phải là draft | published | closed.', 400);
+  if (status !== 'draft' && status !== 'published' && status !== 'closed') {
+    return apiError('status phải là draft | published | closed.', 400);
+  }
 
   if (status === 'published' && form.questions.length === 0) {
     return apiError('Form chưa có câu hỏi — không thể xuất bản.', 400);

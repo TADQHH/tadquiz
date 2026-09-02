@@ -37,6 +37,7 @@ test('upsertAdmin tạo mới rồi reset mật khẩu', () => {
   assert.equal(second.created, false);
   assert.equal(second.id, first.id);
   const row = findByUsername('root');
+  if (row === undefined) throw new Error('thiếu admin row');
   assert.equal(row.password_hash, 'scrypt$cc$dd');
 });
 
@@ -51,16 +52,23 @@ test('form CRUD + slug duy nhất', () => {
     { type: 'rating', label: 'Đánh giá?', required: false },
   ]);
   const form = getForm(id);
+  if (form === null) throw new Error('thiếu form');
   assert.equal(form.questions.length, 2);
   assert.equal(form.questions[0].type, 'text');
   assert.equal(form.status, 'draft');
 
   updateFormMeta(id, { title: 'Khảo sát 2026' });
-  assert.equal(getForm(id).title, 'Khảo sát 2026');
-  assert.equal(getFormBySlug('khao-sat').id, id);
+  const renamed = getForm(id);
+  if (renamed === null) throw new Error('thiếu form sau rename');
+  assert.equal(renamed.title, 'Khảo sát 2026');
+  const bySlug = getFormBySlug('khao-sat');
+  if (bySlug === null) throw new Error('thiếu form theo slug');
+  assert.equal(bySlug.id, id);
 
   setStatus(id, 'published');
-  assert.equal(getForm(id).status, 'published');
+  const published = getForm(id);
+  if (published === null) throw new Error('thiếu form sau publish');
+  assert.equal(published.status, 'published');
 });
 
 test('replaceQuestions thay thế hoàn toàn theo thứ tự', () => {
@@ -69,6 +77,7 @@ test('replaceQuestions thay thế hoàn toàn theo thứ tự', () => {
   replaceQuestions(id, [{ type: 'text', label: 'Q1' }, { type: 'text', label: 'Q2' }]);
   replaceQuestions(id, [{ type: 'textarea', label: 'Only' }]);
   const form = getForm(id);
+  if (form === null) throw new Error('thiếu form');
   assert.equal(form.questions.length, 1);
   assert.equal(form.questions[0].label, 'Only');
   assert.equal(form.questions[0].type, 'textarea');
@@ -81,7 +90,9 @@ test('responses: insert + list + stats + count trong listForms', () => {
     { type: 'text', label: 'Tên' },
     { type: 'multi_choice', label: 'Chọn', options: ['a', 'b'] },
   ]);
-  const questions = getForm(id).questions;
+  const withQs = getForm(id);
+  if (withQs === null) throw new Error('thiếu form');
+  const questions = withQs.questions;
 
   const rid = insertResponse(
     id,
@@ -110,7 +121,7 @@ test('deleteForm cascade responses + questions', () => {
   const admin = upsertAdmin('root', 'scrypt$aa$bb');
   const id = createForm({ slug: 's', title: 'S', createdBy: admin.id });
   replaceQuestions(id, [{ type: 'text', label: 'Q1' }]);
-  insertResponse(id, [{ questionId: getForm(id).questions[0].id, value: '"x"' }]);
+  insertResponse(id, [{ questionId: getForm(id)!.questions[0].id, value: '"x"' }]);
   deleteForm(id);
   assert.equal(getForm(id), null);
   assert.equal(listResponses(id).length, 0);

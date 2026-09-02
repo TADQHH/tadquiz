@@ -1,6 +1,9 @@
 ---
-// Placeholder shell — UI replaced by design implementer.
-import '../../../../styles/global.css';
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import KpiStat from '../../../../components/kpi-stat/KpiStat.astro';
+import ResponsesTable from '../../../../components/responses-table/ResponsesTable.astro';
+import StatusBadge from '../../../../components/status-badge/StatusBadge.tsx';
+import { formatViDate } from '../../../../components/format-date/format-date';
 import { getForm } from '../../../../db/forms.mjs';
 import { listResponses } from '../../../../db/responses.mjs';
 
@@ -8,20 +11,30 @@ const id = Number.parseInt(String(Astro.params.id ?? ''), 10);
 const form = Number.isInteger(id) ? getForm(id) : null;
 if (!form) return Astro.redirect('/404');
 const rows = listResponses(form.id);
+const latest = rows[0]?.submittedAt ? formatViDate(rows[0].submittedAt) : '—';
 ---
 
-<!doctype html>
-<html lang="vi" data-theme="tad">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex, nofollow" />
-    <title>{form.title} — Phản hồi — TADQuiz</title>
-  </head>
-  <body>
-    <main id="main" class="page-shell py-12">
-      <h1 class="section-title">{rows.length} phản hồi</h1>
-      <p><a href={`/api/forms/${form.id}/responses.csv`}>Xuất CSV</a></p>
-    </main>
-  </body>
-</html>
+<AdminLayout title={`${form.title} — Phản hồi — TADQuiz`}>
+  <main id="main" class="page-shell py-10">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <div class="flex flex-wrap items-center gap-3">
+          <h1 class="section-title">{form.title}</h1>
+          <StatusBadge status={form.status} />
+        </div>
+        <a href={`/admin/f/${form.id}`} class="mt-3 inline-flex min-h-11 items-center font-headline text-sm font-bold uppercase tracking-wide">
+          ← Về editor
+        </a>
+      </div>
+      <a href={`/api/forms/${form.id}/responses.csv`} class="btn-black" download>
+        Xuất CSV
+      </a>
+    </div>
+    <div class="mt-8 grid gap-4 md:grid-cols-3">
+      <KpiStat label="Tổng phản hồi" value={String(rows.length)} />
+      <KpiStat label="Câu hỏi" value={String(form.questions.length)} />
+      <KpiStat label="Gần nhất" value={latest} />
+    </div>
+    <ResponsesTable questions={form.questions} rows={rows} />
+  </main>
+</AdminLayout>

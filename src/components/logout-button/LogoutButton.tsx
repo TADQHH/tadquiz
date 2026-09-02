@@ -6,7 +6,10 @@ export default function LogoutButton() {
   async function logout() {
     setBusy(true);
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
     } finally {
       location.href = '/admin/login';
     }

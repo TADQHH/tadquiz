@@ -14,7 +14,7 @@
     "check": "astro check && node scripts/check-line-limit.mjs",
     "lines": "node scripts/check-line-limit.mjs",
     "gen:env": "node scripts/gen-env.mjs",
-    "admin": "node scripts/create-admin.mjs",
+    "admin": "bash scripts/create-admin.sh",
     "start": "node dist/server/entry.mjs",
     "test": "npm run gen:env && node --test tests/unit/*.test.ts",
     "test:e2e": "node scripts/smoke-e2e.mjs"
@@ -32,10 +32,10 @@
     "tailwindcss": "^4.1.12"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.4",
+    "@astrojs/check": "^0.9.10",
     "@types/better-sqlite3": "^7.6.13",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.3"
   }
 }

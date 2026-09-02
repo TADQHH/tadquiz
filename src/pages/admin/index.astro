@@ -1,27 +1,13 @@
 ---
-import '../../styles/global.css';
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import Dashboard from '../../components/dashboard/Dashboard.tsx';
 import { listForms } from '../../db/forms.mjs';
+
 const forms = listForms();
 ---
 
-<!doctype html>
-<html lang="vi" data-theme="tad">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex, nofollow" />
-    <title>Admin — TADQuiz</title>
-  </head>
-  <body>
-    <main id="main" class="page-shell py-12">
-      <h1 class="section-title">Quản lý form</h1>
-      <ul>
-        {forms.map((f) => (
-          <li>
-            {f.title} — <code>/q/{f.slug}</code> — {f.status} — {f.responseCount} phản hồi
-          </li>
-        ))}
-      </ul>
-    </main>
-  </body>
-</html>
+<AdminLayout title="Admin — TADQuiz">
+  <main id="main" class="page-shell py-10">
+    <Dashboard client:load forms={forms} />
+  </main>
+</AdminLayout>

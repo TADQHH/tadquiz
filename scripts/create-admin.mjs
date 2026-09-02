@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-/** create-admin.mjs — the ONLY way admin accounts are created (no signup UI).
+/** create-admin.mjs — non-interactive engine: scrypt hash + ghi SQLite.
+ * Tương tác (hỏi user/pass) dùng scripts/create-admin.sh.
  *
  * Usage:
- *   node scripts/create-admin.mjs <username> [--password <pw>] [--yes]
+ *   node scripts/create-admin.mjs <username> --password <pw> [--yes]
  *   TADQUIZ_ADMIN_PASSWORD=<pw> node scripts/create-admin.mjs <username>
  *
- * With no --password/env value and a TTY it prompts twice (input hidden).
- * Existing account: password is reset after confirmation (or immediately with --yes).
+ * Tài khoản đã tồn tại → đặt lại mật khẩu (hỏi xác nhận khi có TTY, trừ --yes).
  */
 import { createInterface } from 'node:readline/promises';
 import { stdout, stdin, argv, exit } from 'node:process';
@@ -30,42 +30,16 @@ function parseArgs(args) {
   return out;
 }
 
-async function promptPassword() {
-  const rl = createInterface({ input: stdin, output: stdout });
-  try {
-    const first = await rl.question('Mật khẩu (min 8 ký tự): ', { hideEchoBack: true });
-    const second = await rl.question('Nhập lại mật khẩu: ', { hideEchoBack: true });
-    return first === second ? first : null;
-  } finally {
-    rl.close();
-  }
-}
-
 async function main() {
   const { username, password: pwArg, yes } = parseArgs(argv.slice(2));
-  const envPw = process.env.TADQUIZ_ADMIN_PASSWORD ?? '';
+  const password = pwArg || process.env.TADQUIZ_ADMIN_PASSWORD || '';
 
   const usernameCheck = validateUsername(username);
   if (!usernameCheck.ok) {
     console.error(`Lỗi: ${usernameCheck.error}`);
+    console.error('Tương tác: chạy scripts/create-admin.sh (không tham số).');
     exit(1);
   }
-
-  let password = pwArg || envPw;
-  if (!password) {
-    if (stdin.isTTY) {
-      const prompted = await promptPassword();
-      if (prompted === null) {
-        console.error('Lỗi: hai lần nhập mật khẩu không khớp.');
-        exit(1);
-      }
-      password = prompted;
-    } else {
-      console.error('Lỗi: truyền --password hoặc set TADQUIZ_ADMIN_PASSWORD khi chạy non-interactive.');
-      exit(1);
-    }
-  }
-
   const pwCheck = validatePassword(password);
   if (!pwCheck.ok) {
     console.error(`Lỗi: ${pwCheck.error}`);
@@ -76,9 +50,7 @@ async function main() {
   const existing = findByUsername(username);
   if (existing && !yes && stdin.isTTY) {
     const rl = createInterface({ input: stdin, output: stdout });
-    const answer = await rl.question(
-      `Admin "${username}" đã tồn tại — đặt lại mật khẩu? (y/N) `,
-    );
+    const answer = await rl.question(`Admin "${username}" đã tồn tại — đặt lại mật khẩu? (y/N) `);
     rl.close();
     if (!/^y(es)?$/i.test(answer.trim())) {
       console.log('Đã hủy.');

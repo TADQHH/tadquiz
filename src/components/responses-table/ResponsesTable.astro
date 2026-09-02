@@ -1,0 +1,46 @@
+---
+import type { Question } from '../../lib/types';
+import { formatViDate } from '../format-date/format-date';
+
+type Row = { id: number; submittedAt: string; answers: Record<string, unknown> };
+type Props = { questions: Question[]; rows: Row[] };
+
+const { questions, rows } = Astro.props;
+
+function cell(value: unknown) {
+  if (value == null) return '';
+  if (Array.isArray(value)) return value.join(' | ');
+  return String(value);
+}
+---
+
+{rows.length === 0 ? (
+  <p class="mt-8 border border-dashed border-[var(--border)] bg-[var(--card)] p-8 text-[var(--muted-foreground)]">
+    Chưa có phản hồi nào.
+  </p>
+) : (
+  <div class="mt-8 overflow-x-auto border border-[var(--border)] bg-[var(--card)]">
+    <table class="resp-table w-full min-w-[40rem] text-sm">
+      <thead>
+        <tr>
+          <th scope="col" class="w-16 whitespace-nowrap">ID</th>
+          <th scope="col" class="w-44 whitespace-nowrap">Thời gian</th>
+          {questions.map((q) => (
+            <th scope="col">{q.label}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row) => (
+          <tr>
+            <td class="whitespace-nowrap font-mono text-xs">#{row.id}</td>
+            <td class="whitespace-nowrap text-xs">{formatViDate(row.submittedAt)}</td>
+            {questions.map((q) => (
+              <td>{cell(row.answers[String(q.id)])}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+)}
