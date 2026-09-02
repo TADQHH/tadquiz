@@ -30,6 +30,7 @@ export default function FormEditor({ form }: { form: FormDetail }) {
               index={index}
               total={editor.questions.length}
               question={question}
+              earlier={editor.questions.slice(0, index)}
               onChange={(next) =>
                 editor.setQuestions((prev) => prev.map((item, i) => (i === index ? next : item)))
               }

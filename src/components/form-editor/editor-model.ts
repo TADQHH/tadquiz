@@ -1,4 +1,11 @@
-import type { FormDetail, FormStatus, QuestionType } from '../../lib/types';
+import { opNeedsValue } from '../../lib/logic';
+import type { FormDetail, FormStatus, LogicOperator, QuestionLogic, QuestionType } from '../../lib/types';
+
+export type DraftLogic = {
+  questionKey: string;
+  op: LogicOperator;
+  value?: string | number;
+};
 
 export type DraftQuestion = {
   key: string;
@@ -8,19 +15,21 @@ export type DraftQuestion = {
   options: string[];
   required: boolean;
   maxChars: number | null;
+  logic: DraftLogic | null;
 };
 
 let seed = 0;
 
 export function fromForm(form: FormDetail): DraftQuestion[] {
   return form.questions.map((q) => ({
-    key: String(q.id),
+    key: q.key || String(q.id),
     type: q.type,
     label: q.label,
     description: q.description,
     options: q.options,
     required: q.required,
     maxChars: q.maxChars,
+    logic: q.logic ?? null,
   }));
 }
 
@@ -34,6 +43,7 @@ export function newQuestion(): DraftQuestion {
     options: [],
     required: true,
     maxChars: null,
+    logic: null,
   };
 }
 
@@ -43,6 +53,13 @@ export function applyType(question: DraftQuestion, type: QuestionType): DraftQue
     next.options = [...next.options, '', ''].slice(0, 2);
   }
   return next;
+}
+
+function logicPayload(logic: DraftLogic | null, earlierKeys: Set<string>): QuestionLogic | null {
+  if (!logic?.questionKey || !logic.op) return null;
+  if (!earlierKeys.has(logic.questionKey)) return null;
+  if (opNeedsValue(logic.op) && (logic.value === undefined || logic.value === '')) return null;
+  return logic;
 }
 
 export function snapshot(
@@ -55,13 +72,15 @@ export function snapshot(
     title,
     slug,
     description,
-    questions: questions.map(({ type, label, description: d, options, required, maxChars }) => ({
+    questions: questions.map(({ key, type, label, description: d, options, required, maxChars, logic }) => ({
+      key,
       type,
       label,
       description: d,
       options,
       required,
       maxChars,
+      logic,
     })),
   });
 }
@@ -76,13 +95,15 @@ export function payloadOf(
     title,
     slug,
     description,
-    questions: questions.map((q) => ({
+    questions: questions.map((q, i) => ({
+      key: q.key,
       type: q.type,
       label: q.label,
       description: q.description,
       options: q.options,
       required: q.required,
       maxChars: q.maxChars,
+      logic: logicPayload(q.logic, new Set(questions.slice(0, i).map((item) => item.key))),
     })),
   };
 }

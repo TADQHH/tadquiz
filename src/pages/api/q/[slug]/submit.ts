@@ -3,6 +3,7 @@ import { apiError, readJson } from '../../../../lib/http';
 import { getFormBySlug } from '../../../../db/forms.mjs';
 import { insertResponse } from '../../../../db/responses.mjs';
 import { validateAnswers } from '../../../../lib/validate';
+import { visibleQuestions } from '../../../../lib/logic';
 import { checkRate } from '../../../../lib/ratelimit.mjs';
 
 export const POST: APIRoute = async ({ params, request, clientAddress }) => {
@@ -20,8 +21,10 @@ export const POST: APIRoute = async ({ params, request, clientAddress }) => {
     return apiError('Payload không hợp lệ.', 400);
   }
 
-  // Ignore unknown question ids — validate only real questions.
-  const result = validateAnswers(form.questions, body.answers);
+  // Only questions visible under the submitted answers count: required checks
+  // skip hidden questions and answers to hidden questions are dropped.
+  const visible = visibleQuestions(form.questions, body.answers);
+  const result = validateAnswers(visible, body.answers);
   if (!result.ok) {
     return Response.json(
       { error: 'Còn câu chưa hợp lệ.', fields: result.errors },

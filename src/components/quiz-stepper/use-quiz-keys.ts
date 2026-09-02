@@ -62,7 +62,7 @@ export function useQuizKeys(api: Api) {
       event.preventDefault();
       if (question.type === 'single_choice') {
         setAnswer(question.id, option);
-        window.setTimeout(() => next({ [question.id]: option }), 150);
+        window.setTimeout(() => ref.current.next({ [question.id]: option }), 150);
         return;
       }
       const current = answers[String(question.id)];

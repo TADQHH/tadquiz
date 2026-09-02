@@ -7,7 +7,7 @@ export function createForm(input: {
   description?: string;
   createdBy: number;
 }): number;
-export function replaceQuestions(formId: number, questions: FormInput['questions']): void;
+export function syncQuestions(formId: number, questions: FormInput['questions']): void;
 export function getForm(id: number): FormDetail | null;
 export function getFormBySlug(slug: string): FormDetail | null;
 export function listForms(): FormSummary[];

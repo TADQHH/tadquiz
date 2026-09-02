@@ -10,7 +10,7 @@ import {
   getForm,
   getFormBySlug,
   listForms,
-  replaceQuestions,
+  syncQuestions,
   setStatus,
   slugExists,
   updateFormMeta,
@@ -47,9 +47,9 @@ test('form CRUD + slug duy nhất', () => {
   assert.ok(slugExists('khao-sat'));
   assert.ok(!slugExists('khao-sat', id));
 
-  replaceQuestions(id, [
-    { type: 'text', label: 'Tên bạn?', required: true },
-    { type: 'rating', label: 'Đánh giá?', required: false },
+  syncQuestions(id, [
+    { key: 'q1', type: 'text', label: 'Tên bạn?', required: true },
+    { key: 'q2', type: 'rating', label: 'Đánh giá?', required: false },
   ]);
   const form = getForm(id);
   if (form === null) throw new Error('thiếu form');
@@ -71,24 +71,79 @@ test('form CRUD + slug duy nhất', () => {
   assert.equal(published.status, 'published');
 });
 
-test('replaceQuestions thay thế hoàn toàn theo thứ tự', () => {
+test('syncQuestions đồng bộ theo key: cập nhật, thêm, xóa đúng', () => {
   const admin = upsertAdmin('root', 'scrypt$aa$bb');
   const id = createForm({ slug: 's', title: 'S', createdBy: admin.id });
-  replaceQuestions(id, [{ type: 'text', label: 'Q1' }, { type: 'text', label: 'Q2' }]);
-  replaceQuestions(id, [{ type: 'textarea', label: 'Only' }]);
+  syncQuestions(id, [
+    { key: 'q1', type: 'text', label: 'Q1' },
+    { key: 'q2', type: 'text', label: 'Q2' },
+  ]);
+  syncQuestions(id, [
+    { key: 'q1', type: 'text', label: 'Q1 (đã sửa)' },
+    { key: 'q3', type: 'textarea', label: 'Only' },
+  ]);
   const form = getForm(id);
   if (form === null) throw new Error('thiếu form');
-  assert.equal(form.questions.length, 1);
-  assert.equal(form.questions[0].label, 'Only');
-  assert.equal(form.questions[0].type, 'textarea');
+  assert.equal(form.questions.length, 2);
+  assert.deepEqual(
+    form.questions.map((q) => q.label),
+    ['Q1 (đã sửa)', 'Only'],
+  );
+  assert.equal(form.questions[0].key, 'q1');
+  assert.equal(form.questions[1].type, 'textarea');
+});
+
+test('syncQuestions giữ nguyên id câu hỏi → answers không mất khi sửa form', () => {
+  const admin = upsertAdmin('root', 'scrypt$aa$bb');
+  const id = createForm({ slug: 's2', title: 'S2', createdBy: admin.id });
+  syncQuestions(id, [
+    { key: 'q1', type: 'text', label: 'Tên' },
+    { key: 'q2', type: 'rating', label: 'Sao?' },
+  ]);
+  const before = getForm(id)!.questions;
+  insertResponse(id, [
+    { questionId: before[0].id, value: '"An"' },
+    { questionId: before[1].id, value: '5' },
+  ]);
+
+  syncQuestions(id, [
+    { key: 'q1', type: 'text', label: 'Tên (sửa)' },
+    { key: 'q2', type: 'rating', label: 'Sao? (sửa)' },
+  ]);
+  const after = getForm(id)!.questions;
+  assert.equal(after[0].id, before[0].id);
+  assert.equal(after[1].id, before[1].id);
+  assert.equal(after[0].label, 'Tên (sửa)');
+  const rows = listResponses(id);
+  assert.equal(rows.length, 1);
+  assert.equal(Object.keys(rows[0].answers).length, 2);
+});
+
+test('syncQuestions lưu và đọc lại logic điều kiện', () => {
+  const admin = upsertAdmin('root', 'scrypt$aa$bb');
+  const id = createForm({ slug: 's3', title: 'S3', createdBy: admin.id });
+  syncQuestions(id, [
+    { key: 'q9', type: 'single_choice', label: 'Nhận tin?', options: ['Có', 'Không'] },
+    {
+      key: 'q10',
+      type: 'text',
+      label: 'Email',
+      logic: { questionKey: 'q9', op: 'eq', value: 'Có' },
+    },
+  ]);
+  const form = getForm(id)!;
+  assert.equal(form.questions[1].logic?.questionKey, 'q9');
+  assert.equal(form.questions[1].logic?.op, 'eq');
+  assert.equal(form.questions[1].logic?.value, 'Có');
+  assert.equal(form.questions[0].logic, null);
 });
 
 test('responses: insert + list + stats + count trong listForms', () => {
   const admin = upsertAdmin('root', 'scrypt$aa$bb');
   const id = createForm({ slug: 's', title: 'S', createdBy: admin.id });
-  replaceQuestions(id, [
-    { type: 'text', label: 'Tên' },
-    { type: 'multi_choice', label: 'Chọn', options: ['a', 'b'] },
+  syncQuestions(id, [
+    { key: 'q1', type: 'text', label: 'Tên' },
+    { key: 'q2', type: 'multi_choice', label: 'Chọn', options: ['a', 'b'] },
   ]);
   const withQs = getForm(id);
   if (withQs === null) throw new Error('thiếu form');
@@ -120,7 +175,7 @@ test('responses: insert + list + stats + count trong listForms', () => {
 test('deleteForm cascade responses + questions', () => {
   const admin = upsertAdmin('root', 'scrypt$aa$bb');
   const id = createForm({ slug: 's', title: 'S', createdBy: admin.id });
-  replaceQuestions(id, [{ type: 'text', label: 'Q1' }]);
+  syncQuestions(id, [{ key: 'q1', type: 'text', label: 'Q1' }]);
   insertResponse(id, [{ questionId: getForm(id)!.questions[0].id, value: '"x"' }]);
   deleteForm(id);
   assert.equal(getForm(id), null);

@@ -13,6 +13,7 @@ function rowToQuestion(row) {
   return {
     id: row.id,
     formId: row.form_id,
+    key: row.key,
     type: row.type,
     label: row.label,
     description: row.description,
@@ -20,6 +21,7 @@ function rowToQuestion(row) {
     required: row.required === 1,
     position: row.position,
     maxChars: row.max_chars === null ? null : row.max_chars,
+    logic: row.logic ? JSON.parse(row.logic) : null,
   };
 }
 
@@ -56,21 +58,36 @@ export function createForm({ slug, title, description = '', createdBy }) {
 }
 
 /**
- * Replace the full question set of a form inside one transaction.
+ * Sync the question set of a form inside one transaction, keyed by the stable
+ * client key: existing rows keep their ids (so past answers survive edits),
+ * new keys are inserted, keys missing from the payload are deleted (their
+ * answers cascade away with the question).
  * @param {number} formId
- * @param {Array<{type:string,label:string,description?:string,options?:string[],required?:boolean,maxChars?:number|null}>} questions
+ * @param {Array<{key:string,type:string,label:string,description?:string,options?:string[],required?:boolean,maxChars?:number|null,logic?:object|null}>} questions
  */
-export function replaceQuestions(formId, questions) {
+export function syncQuestions(formId, questions) {
   const db = getDb();
   const tx = db.transaction((list) => {
-    db.prepare('DELETE FROM questions WHERE form_id = ?').run(formId);
-    const insert = db.prepare(
-      'INSERT INTO questions (form_id, type, label, description, options, required, position, max_chars) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-    );
+    const upsert = db.prepare(`
+      INSERT INTO questions (form_id, key, type, label, description, options, required, position, max_chars, logic)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT (form_id, key) DO UPDATE SET
+        type = excluded.type,
+        label = excluded.label,
+        description = excluded.description,
+        options = excluded.options,
+        required = excluded.required,
+        position = excluded.position,
+        max_chars = excluded.max_chars,
+        logic = excluded.logic
+    `);
+    const keys = [];
     list.forEach((q, index) => {
       if (!QUESTION_TYPES.has(q.type)) throw new Error(`Unknown question type: ${q.type}`);
-      insert.run(
+      keys.push(q.key);
+      upsert.run(
         formId,
+        q.key,
         q.type,
         q.label,
         q.description ?? '',
@@ -78,8 +95,13 @@ export function replaceQuestions(formId, questions) {
         q.required ? 1 : 0,
         index,
         q.maxChars ?? null,
+        q.logic ? JSON.stringify(q.logic) : null,
       );
     });
+    const placeholders = keys.map(() => '?').join(', ');
+    db.prepare(
+      `DELETE FROM questions WHERE form_id = ? AND key NOT IN (${placeholders})`,
+    ).run(formId, ...keys);
   });
   tx(questions);
 }

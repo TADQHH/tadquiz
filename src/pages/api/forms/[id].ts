@@ -3,7 +3,7 @@ import { getAdminSession, apiError, readJson } from '../../../lib/http';
 import {
   getForm,
   updateFormMeta,
-  replaceQuestions,
+  syncQuestions,
   deleteForm,
   slugExists,
 } from '../../../db/forms.mjs';
@@ -40,7 +40,7 @@ export const PUT: APIRoute = async (context) => {
   }
 
   updateFormMeta(id, result.value);
-  replaceQuestions(id, result.value.questions);
+  syncQuestions(id, result.value.questions);
   const updated = getForm(id);
   return Response.json(updated);
 };

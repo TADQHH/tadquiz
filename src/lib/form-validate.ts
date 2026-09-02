@@ -1,7 +1,10 @@
 /** Server-side validation for admin-authored form payloads (PUT /api/forms/:id). */
-import type { FormInput, QuestionInput } from './types.ts';
+import type { FormInput, QuestionInput, QuestionLogic, LogicOperator } from './types.ts';
 import { QUESTION_TYPES, MAX_LABEL_CHARS, MAX_OPTION_CHARS, MAX_OPTIONS } from './types.ts';
+import { OPERATORS_BY_TYPE, opNeedsValue } from './logic.ts';
 import { validateSlug } from './slug.ts';
+
+const KEY_PATTERN = /^[A-Za-z0-9:_-]{1,100}$/;
 
 export interface FormPayloadResult {
   ok: boolean
@@ -40,6 +43,42 @@ function checkQuestion(q: unknown): string | null {
   return null;
 }
 
+/** Normalize + validate one condition against its earlier reference question. */
+function checkLogic(
+  raw: unknown,
+  earlier: QuestionInput[],
+): QuestionLogic | null | string {
+  if (raw === null || raw === undefined) return null;
+  if (typeof raw !== 'object') return 'Điều kiện hiển thị không hợp lệ.';
+  const item = raw as Record<string, unknown>;
+  const questionKey = typeof item.questionKey === 'string' ? item.questionKey : '';
+  const ref = earlier.find((q) => q.key === questionKey);
+  if (!ref) return 'Điều kiện chỉ được tham chiếu câu hỏi ĐẦU TRƯỚC nó.';
+  const op = item.op as LogicOperator;
+  if (!OPERATORS_BY_TYPE[ref.type].includes(op)) {
+    return `Toán tử "${String(item.op)}" không dùng được cho loại câu hỏi đó.`;
+  }
+  if (!opNeedsValue(op)) return { questionKey, op };
+  const value = item.value;
+  if (ref.type === 'single_choice' || ref.type === 'multi_choice') {
+    if (typeof value !== 'string' || !(ref.options ?? []).includes(value)) {
+      return 'Giá trị điều kiện phải là một phương án của câu hỏi tham chiếu.';
+    }
+    return { questionKey, op, value };
+  }
+  if (ref.type === 'rating') {
+    const num = typeof value === 'number' ? value : Number.parseInt(String(value), 10);
+    if (!Number.isInteger(num) || num < 1 || num > 5) {
+      return 'Giá trị điều kiện thang đo phải là số nguyên 1–5.';
+    }
+    return { questionKey, op, value: num };
+  }
+  if (typeof value !== 'string' || value.trim() === '') {
+    return 'Điều kiện "chứa/không chứa" cần nội dung để so sánh.';
+  }
+  return { questionKey, op, value: value.trim().slice(0, 200) };
+}
+
 export function validateFormPayload(input: unknown): FormPayloadResult {
   if (typeof input !== 'object' || input === null) {
     return { ok: false, error: 'Payload không hợp lệ.' };
@@ -57,25 +96,34 @@ export function validateFormPayload(input: unknown): FormPayloadResult {
     return { ok: false, error: 'Thiếu danh sách câu hỏi.' };
   }
   if (body.questions.length > 100) return { ok: false, error: 'Tối đa 100 câu hỏi.' };
+
+  const seenKeys = new Set<string>();
+  const questions: QuestionInput[] = [];
   for (const q of body.questions) {
     const err = checkQuestion(q);
     if (err) return { ok: false, error: err };
+    const key = typeof q.key === 'string' ? q.key : '';
+    if (!KEY_PATTERN.test(key)) {
+      return { ok: false, error: `Key câu hỏi "${key.slice(0, 30)}" không hợp lệ (1–100 ký tự A–z 0–9 : _ -).` };
+    }
+    if (seenKeys.has(key)) return { ok: false, error: `Key câu hỏi "${key}" bị trùng.` };
+    seenKeys.add(key);
+    const logic = checkLogic(q.logic, questions);
+    if (typeof logic === 'string') return { ok: false, error: logic };
+    questions.push({
+      key,
+      type: q.type,
+      label: q.label.trim(),
+      description: (q.description ?? '').slice(0, 500),
+      options: (q.options ?? []).map((o) => o.trim()),
+      required: Boolean(q.required),
+      maxChars: q.maxChars ?? null,
+      logic,
+    });
   }
 
   return {
     ok: true,
-    value: {
-      title,
-      slug: slugCheck.slug,
-      description,
-      questions: body.questions.map((q) => ({
-        type: q.type,
-        label: q.label.trim(),
-        description: (q.description ?? '').slice(0, 500),
-        options: (q.options ?? []).map((o) => o.trim()),
-        required: Boolean(q.required),
-        maxChars: q.maxChars ?? null,
-      })),
-    },
+    value: { title, slug: slugCheck.slug, description, questions },
   };
 }

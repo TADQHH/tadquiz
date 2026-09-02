@@ -67,20 +67,31 @@ async function main() {
   ok('tạo form 201', created.res.status === 201 && Boolean(created.json?.id));
   const id = created.json.id;
 
-  // 5. PUT câu hỏi đủ 5 loại
-  const put = await call('PUT', `/api/forms/${id}`, {
+  // 5. PUT câu hỏi đủ 5 loại + 1 câu điều kiện (chỉ hiện khi câu 3 chọn 'A')
+  const payload = {
     title: 'E2E Khảo sát kiểm thử',
     slug,
     description: 'Kiểm thử tự động',
     questions: [
-      { type: 'text', label: 'Tên bạn?', required: true },
-      { type: 'textarea', label: 'Ý kiến thêm?', maxChars: 100 },
-      { type: 'single_choice', label: 'Chọn một', options: ['A', 'B'], required: true },
-      { type: 'multi_choice', label: 'Chọn nhiều', options: ['X', 'Y', 'Z'] },
-      { type: 'rating', label: 'Đánh giá', required: true },
+      { key: 'q1', type: 'text', label: 'Tên bạn?', required: true },
+      { key: 'q2', type: 'textarea', label: 'Ý kiến thêm?', maxChars: 100 },
+      { key: 'q3', type: 'single_choice', label: 'Chọn một', options: ['A', 'B'], required: true },
+      { key: 'q4', type: 'multi_choice', label: 'Chọn nhiều', options: ['X', 'Y', 'Z'] },
+      { key: 'q5', type: 'rating', label: 'Đánh giá', required: true },
+      {
+        key: 'q6',
+        type: 'text',
+        label: 'Email (khi chọn A)',
+        required: true,
+        logic: { questionKey: 'q3', op: 'eq', value: 'A' },
+      },
     ],
-  });
-  ok('PUT câu hỏi 200, 5 câu', put.res.status === 200 && put.json?.questions?.length === 5);
+  };
+  const put = await call('PUT', `/api/forms/${id}`, payload);
+  ok(
+    'PUT câu hỏi 200, 6 câu + logic',
+    put.res.status === 200 && put.json?.questions?.length === 6 && put.json.questions[5].logic?.op === 'eq',
+  );
   const questions = put.json.questions;
 
   // 6. Publish
@@ -92,43 +103,67 @@ async function main() {
   ok('trang /q/slug render 200', quizPage.res.status === 200 && quizPage.text.includes('E2E'));
 
   // 8. Submit hợp lệ
+  // 8. Submit hợp lệ — Q3='B' làm Q6 ẩn: required Q6 được bỏ qua,
+  //    answer cố tình gửi cho Q6 ẩn phải bị server drop.
   const submit = await call('POST', `/api/q/${slug}/submit`, {
     answers: {
       [questions[0].id]: 'Robot E2E',
       [questions[1].id]: 'Không có',
-      [questions[2].id]: 'A',
+      [questions[2].id]: 'B',
       [questions[3].id]: ['X', 'Z'],
       [questions[4].id]: 5,
+      [questions[5].id]: 'an@hidden.dev',
     },
   });
-  ok('submit hợp lệ 201', submit.res.status === 201 && submit.json?.redirect === `/q/${slug}/done`);
+  ok('submit hợp lệ 201 (câu điều kiện ẩn)', submit.res.status === 201 && submit.json?.redirect === `/q/${slug}/done`);
 
-  // 9. Submit thiếu bắt buộc
+  // 9. Submit khi Q3='A' → Q6 hiện + bắt buộc → thiếu phải 400
   const badSubmit = await call('POST', `/api/q/${slug}/submit`, {
-    answers: { [questions[2].id]: 'A' },
+    answers: {
+      [questions[0].id]: 'Robot E2E 2',
+      [questions[2].id]: 'A',
+      [questions[4].id]: 4,
+    },
   });
   ok(
-    'submit thiếu câu bắt buộc → 400 + fields',
-    badSubmit.res.status === 400 && Boolean(badSubmit.json?.fields),
+    'submit thiếu câu điều kiện bắt buộc → 400 + fields',
+    badSubmit.res.status === 400 && Boolean(badSubmit.json?.fields?.[String(questions[5].id)]),
   );
 
   // 10. Slug trùng
-  const dup = await call('PUT', `/api/forms/${id}`, {
+  await call('PUT', `/api/forms/${id}`, {
     title: 'x', slug: 'admin', description: '', questions: [],
   });
-  // 11. CSV — BOM check bằng bytes (res.text() tự strip BOM khi decode)
+  // 11. CSV — BOM check bằng bytes (res.text() tự strip BOM khi decode);
+  //     answer của câu ẩn (an@hidden.dev) phải KHÔNG xuất hiện.
   const csvRes = await fetch(`${BASE}/api/forms/${id}/responses.csv`, {
     headers: { Cookie: cookie },
   });
   const csvBytes = new Uint8Array(await csvRes.arrayBuffer());
   const csvText = new TextDecoder('utf-8', { ignoreBOM: true }).decode(csvBytes);
   ok(
-    'CSV có BOM + dữ liệu',
+    'CSV có BOM + dữ liệu, đã drop answer câu ẩn',
     csvRes.status === 200 &&
       csvBytes[0] === 0xef && csvBytes[1] === 0xbb && csvBytes[2] === 0xbf &&
       csvText.includes('Robot E2E') &&
-      csvText.includes('X | Z'),
+      csvText.includes('X | Z') &&
+      !csvText.includes('an@hidden.dev'),
   );
+
+  // 11b. Sửa form giữ nguyên key → id câu hỏi + response cũ phải còn nguyên
+  const rePut = await call('PUT', `/api/forms/${id}`, payload);
+  ok(
+    're-PUT giữ id câu hỏi (answers không mất)',
+    rePut.res.status === 200 &&
+      rePut.json?.questions?.map((q) => q.id).join(',') === questions.map((q) => q.id).join(','),
+  );
+  const csvRes2 = await fetch(`${BASE}/api/forms/${id}/responses.csv`, {
+    headers: { Cookie: cookie },
+  });
+  const csvText2 = await csvRes2.text();
+  ok('response cũ còn sau khi sửa form', csvText2.includes('Robot E2E'));
+
+
 
   // 12. Logout + guard lại
   await call('POST', '/api/auth/logout');

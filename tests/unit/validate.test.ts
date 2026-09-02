@@ -10,6 +10,7 @@ function q(partial: Partial<Question>): Question {
   return {
     id: nextId,
     formId: 1,
+    key: `k${nextId}`,
     type: 'text',
     label: 'Câu hỏi',
     description: '',
@@ -17,6 +18,7 @@ function q(partial: Partial<Question>): Question {
     required: false,
     position: 0,
     maxChars: null,
+    logic: null,
     ...partial,
   };
 }

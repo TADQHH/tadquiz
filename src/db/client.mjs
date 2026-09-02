@@ -29,13 +29,15 @@ CREATE TABLE IF NOT EXISTS forms (
 CREATE TABLE IF NOT EXISTS questions (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   form_id INTEGER NOT NULL REFERENCES forms(id) ON DELETE CASCADE,
+  key TEXT NOT NULL DEFAULT '',
   type TEXT NOT NULL CHECK (type IN ('text','textarea','single_choice','multi_choice','rating')),
   label TEXT NOT NULL,
   description TEXT NOT NULL DEFAULT '',
   options TEXT NOT NULL DEFAULT '[]',
   required INTEGER NOT NULL DEFAULT 0,
   position INTEGER NOT NULL DEFAULT 0,
-  max_chars INTEGER
+  max_chars INTEGER,
+  logic TEXT
 );
 
 CREATE TABLE IF NOT EXISTS responses (
@@ -67,10 +69,27 @@ export function initDb(pathStr) {
   db.pragma('journal_mode = WAL');
   db.pragma('foreign_keys = ON');
   db.exec(SCHEMA);
+  migrate(db);
   return db;
 }
 
-/** @returns {Database.Database} */
+/** Idempotent migrations for databases created before conditional logic. */
+function migrate(database) {
+  const columns = new Set(
+    database.pragma('table_info(questions)').map((col) => col.name),
+  );
+  if (!columns.has('key')) {
+    database.exec("ALTER TABLE questions ADD COLUMN key TEXT NOT NULL DEFAULT ''");
+  }
+  if (!columns.has('logic')) {
+    database.exec('ALTER TABLE questions ADD COLUMN logic TEXT');
+  }
+  database.exec("UPDATE questions SET key = 'q' || id WHERE key = ''");
+  database.exec(
+    'CREATE UNIQUE INDEX IF NOT EXISTS idx_questions_form_key ON questions(form_id, key)',
+  );
+}
+
 export function getDb() {
   if (!db) initDb();
   return db;

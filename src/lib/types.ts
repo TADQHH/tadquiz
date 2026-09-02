@@ -17,10 +17,36 @@ export const QUESTION_TYPES: readonly QuestionType[] = [
   'rating',
 ] as const;
 
+/** Conditional-display operators ("chỉ hiện khi…"). */
+export type LogicOperator =
+  | 'eq'
+  | 'neq'
+  | 'lt'
+  | 'lte'
+  | 'gt'
+  | 'gte'
+  | 'contains'
+  | 'not_contains'
+  | 'includes'
+  | 'not_includes'
+  | 'answered'
+  | 'not_answered';
+
+/** A question is shown only when this condition on an EARLIER question holds. */
+export interface QuestionLogic {
+  /** `key` of the referenced earlier question. */
+  questionKey: string;
+  op: LogicOperator;
+  /** Option text, rating 1–5 or text fragment depending on the operator. */
+  value?: string | number;
+}
+
 /** Question as stored in DB / served to UI. */
 export interface Question {
   id: number;
   formId: number;
+  /** Stable client key — logic references and edits survive reordering. */
+  key: string;
   type: QuestionType;
   label: string;
   description: string;
@@ -29,16 +55,20 @@ export interface Question {
   required: boolean;
   position: number;
   maxChars: number | null;
+  /** Conditional display rule, or null for always-visible. */
+  logic: QuestionLogic | null;
 }
 
 /** Input accepted from the admin editor when saving a form. */
 export interface QuestionInput {
+  key: string;
   type: QuestionType;
   label: string;
   description?: string;
   options?: string[];
   required?: boolean;
   maxChars?: number | null;
+  logic?: QuestionLogic | null;
 }
 
 export interface FormInput {
@@ -71,7 +101,7 @@ export type AnswerValue = string | string[] | number;
 export interface ResponseRow {
   id: number;
   submittedAt: string;
-  answers: Record<string, AnswerValue>;
+  answers: Record<string, unknown>;
 }
 
 export const MAX_LABEL_CHARS = 500;
