@@ -43,16 +43,22 @@ img {
   height: auto;
 }
 
-button {
-  font: inherit;
-  color: inherit;
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
+/* Element resets live in the base layer so Tailwind utilities can override
+ * them (unlayered rules would always win the cascade in Tailwind v4). */
+@layer base {
+  button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
 }
 
-:focus-visible {
+/* Focus ring chỉ cho phần tử tương tác — không quấn tiêu đề h2 đang focus
+ * programmatically khi chuyển câu hỏi. */
+:is(a, button, input, textarea, select, summary, [role='tab']):focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 3px;
 }
