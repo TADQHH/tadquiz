@@ -1,19 +1,16 @@
 ---
 import BaseLayout from './BaseLayout.astro';
-import SiteFooter from '../components/site-footer/SiteFooter.astro';
 
 type Props = {
   title: string;
   description?: string;
   noindex?: boolean;
-  footer?: boolean;
 };
 
-const { title, description, noindex = false, footer = true } = Astro.props;
+const { title, description, noindex = false } = Astro.props;
 ---
 
 <BaseLayout title={title} description={description} noindex={noindex}>
   <a class="skip-link" href="#main">Bỏ qua nội dung</a>
   <slot />
-  {footer && <SiteFooter />}
 </BaseLayout>
