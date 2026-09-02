@@ -2,25 +2,25 @@
 
 Nền tảng quiz/khảo sát tự host — form public qua slug tùy chỉnh, admin quản lý form + xem/xuất phản hồi. Design system **TAD** (đỏ/đen/paper — brutalist). Stack: Astro 5 (SSR, Node adapter) + React 19 islands + Tailwind v4 + SQLite (better-sqlite3).
 
+## Tính năng
+
+- 5 loại câu hỏi: text, textarea, chọn một, chọn nhiều, thang đo 1–5; điều khiển toàn bộ bằng bàn phím (phím số/chữ chọn đáp án, Enter chuyển câu).
+- **Câu hỏi điều kiện** kiểu Google Forms: mỗi câu có thể đặt "chỉ hiển thị khi" một câu trước đó thỏa điều kiện (bằng/khác đáp án, so sánh thang đo, chứa chữ, đã/chưa trả lời…). Câu ẩn không hiện, không bắt buộc; chuỗi phụ thuộc tự cascade. Server tự lọc lại visibility khi submit — client gian lận bị drop answer.
+- Sửa form **không mất phản hồi cũ**: câu hỏi đồng bộ theo key ổn định, id câu hỏi giữ nguyên qua mỗi lần lưu.
+- Xem phản hồi 3 chế độ: **Tổng hợp** (thống kê từng câu: bar chart + %, trung bình thang đo, danh sách câu trả lời text), **Từng phản hồi** (bảng + card + modal chi tiết, tìm kiếm), **Bảng tính** (grid full-width sticky header kiểu Google Sheets). Xuất CSV (có BOM cho Excel).
+- Quản trị: dashboard, editor kéo thứ tự, publish/close, slug tùy chỉnh, rate-limit submit 10/phút/IP.
+
 ## Chạy nhanh (Docker)
 
 ```bash
 # tạo admin lần đầu:
-docker compose exec web node scripts/create-admin.mjs admin
-# nhập mật khẩu 2 lần khi được hỏi (hoặc thêm --password <pw>)
-# mở http://localhost:8080 — admin: http://localhost:8080/admin
+docker compose exec web ./scripts/create-admin.sh
+# nhập username + mật khẩu khi được hỏi
+# mở http://localhost:8090 — admin: http://localhost:8090/admin
 ```
 
 Dữ liệu SQLite nằm trong volume `tadquiz-data` (`/data/tadquiz.sqlite`).
 
-Bootstrap admin ngay từ đầu (không cần lệnh riêng):
-
-```yaml
-# docker-compose.yml
-environment:
-  TADQUIZ_ADMIN_USER: admin
-  TADQUIZ_ADMIN_PASSWORD: change-me-please
-```
 
 ## Chạy dev (không Docker)
 
@@ -71,9 +71,9 @@ src/
   components/<feature>/   # mỗi component 1 folder, file ≤200 dòng
   layouts/  pages/  pages/api/
   db/       # SQLite: client, admins, forms, responses (.mjs — chia sẻ với scripts)
-  lib/      # session, password (scrypt), slug, validation, csv, ratelimit
-scripts/    # gen-env.mjs, create-admin.mjs, smoke-e2e.mjs, check-line-limit.mjs
-docker/     # Dockerfile + entrypoint (gen-env + optional admin bootstrap)
+  lib/      # session, password (scrypt), slug, validation, csv, ratelimit, logic (điều kiện hiển thị)
+scripts/    # gen-env.mjs, create-admin.mjs|sh, smoke-e2e.mjs, check-line-limit.mjs
+docker/     # Dockerfile + entrypoint (gen-env)
 ```
 
 ## API
