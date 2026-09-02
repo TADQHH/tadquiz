@@ -20,12 +20,6 @@ const { title, description = 'Quản lý khảo sát TADQuiz.' } = Astro.props;
         TADQuiz
       </a>
       <nav class="flex items-center gap-2" aria-label="Quản trị">
-        <a
-          href="/"
-          class="inline-flex min-h-11 items-center px-3 font-headline text-sm font-bold uppercase tracking-wide text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-        >
-          Trang chủ
-        </a>
         <LogoutButton client:load />
       </nav>
     </div>
