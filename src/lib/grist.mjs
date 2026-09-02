@@ -31,18 +31,22 @@ async function api(path, init = {}) {
 
 /** Grist column id: ASCII, no spaces — keep readable, dedupe clashes. */
 export function columnId(label, index, seen) {
-  const base = label
-    .normalize('NFKD')
-    .replace(/[^\w\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '_')
-    .slice(0, MAX_LABEL_LEN) || `C${index + 1}`;
+  const base =
+    label
+      .replace(/[Đđ]/g, (d) => (d === 'Đ' ? 'D' : 'd'))
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^\w\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '_')
+      .slice(0, MAX_LABEL_LEN) || `C${index + 1}`;
   let id = base;
   let n = 2;
   while (seen.has(id)) id = `${base}_${n++}`;
   seen.add(id);
   return id;
 }
+
 
 /** Create a doc named for the form inside the first workspace of the personal org. */
 export async function createDoc(form) {
