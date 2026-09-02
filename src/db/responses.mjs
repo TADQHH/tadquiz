@@ -45,6 +45,23 @@ export function listResponses(formId) {
   });
 }
 
+/** Responses with id > afterId in submit order (oldest first) — for Grist sync. */
+export function responsesAfter(formId, afterId) {
+  const db = getDb();
+  const rows = db
+    .prepare('SELECT * FROM responses WHERE form_id = ? AND id > ? ORDER BY id ASC')
+    .all(formId, afterId);
+  if (rows.length === 0) return [];
+  const answerStmt = db.prepare('SELECT * FROM answers WHERE response_id = ?');
+  return rows.map((row) => {
+    const answers = {};
+    for (const a of answerStmt.all(row.id)) {
+      answers[String(a.question_id)] = JSON.parse(a.value);
+    }
+    return { id: row.id, submittedAt: row.submitted_at, answers };
+  });
+}
+
 /** @param {number} formId */
 export function responseStats(formId) {
   const db = getDb();

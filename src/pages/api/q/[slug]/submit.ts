@@ -41,5 +41,14 @@ export const POST: APIRoute = async ({ params, request, clientAddress }) => {
     userAgent: request.headers.get('user-agent')?.slice(0, 300) ?? null,
   });
 
+  // Fire-and-forget: đẩy response mới sang Grist nếu đã bật và form đã có doc.
+  if (form.grist?.docId && form.grist.docId !== '') {
+    const { gristEnabled } = await import('../../../../lib/grist.mjs');
+    const { syncFormToGrist } = await import('../../../../lib/grist-sync.mjs');
+    if (gristEnabled()) {
+      syncFormToGrist(form.id, new URL(request.url).origin).catch(() => {});
+    }
+  }
+
   return Response.json({ ok: true, responseId, redirect: `/q/${form.slug}/done` }, { status: 201 });
 };

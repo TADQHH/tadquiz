@@ -1,5 +1,6 @@
 /** Form + question queries. */
 import { getDb } from './client.mjs';
+import { rowToForm, rowToQuestion } from './form-rows.mjs';
 
 const QUESTION_TYPES = new Set([
   'text',
@@ -8,37 +9,6 @@ const QUESTION_TYPES = new Set([
   'multi_choice',
   'rating',
 ]);
-
-function rowToQuestion(row) {
-  return {
-    id: row.id,
-    formId: row.form_id,
-    key: row.key,
-    type: row.type,
-    label: row.label,
-    description: row.description,
-    options: JSON.parse(row.options),
-    required: row.required === 1,
-    position: row.position,
-    maxChars: row.max_chars === null ? null : row.max_chars,
-    logic: row.logic ? JSON.parse(row.logic) : null,
-  };
-}
-
-function rowToForm(row, questions = []) {
-  return {
-    id: row.id,
-    slug: row.slug,
-    title: row.title,
-    description: row.description,
-    status: row.status,
-    responseCount: row.response_count ?? 0,
-    questionCount: row.question_count ?? questions.length,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-    questions,
-  };
-}
 
 /** @param {string} slug @param {number} [excludeId] */
 export function slugExists(slug, excludeId) {
@@ -99,9 +69,7 @@ export function syncQuestions(formId, questions) {
       );
     });
     const placeholders = keys.map(() => '?').join(', ');
-    db.prepare(
-      `DELETE FROM questions WHERE form_id = ? AND key NOT IN (${placeholders})`,
-    ).run(formId, ...keys);
+    db.prepare(`DELETE FROM questions WHERE form_id = ? AND key NOT IN (${placeholders})`).run(formId, ...keys);
   });
   tx(questions);
 }
@@ -196,3 +164,4 @@ export function deleteForm(id) {
   });
   tx();
 }
+

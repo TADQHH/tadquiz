@@ -6,7 +6,7 @@ Nền tảng quiz/khảo sát tự host — form public qua slug tùy chỉnh, a
 
 - 5 loại câu hỏi: text, textarea, chọn một, chọn nhiều, thang đo 1–5; điều khiển toàn bộ bằng bàn phím (phím số/chữ chọn đáp án, Enter chuyển câu).
 - **Câu hỏi điều kiện** kiểu Google Forms: mỗi câu có thể đặt "chỉ hiển thị khi" một câu trước đó thỏa điều kiện (bằng/khác đáp án, so sánh thang đo, chứa chữ, đã/chưa trả lời…). Câu ẩn không hiện, không bắt buộc; chuỗi phụ thuộc tự cascade. Server tự lọc lại visibility khi submit — client gian lận bị drop answer.
-- Sửa form **không mất phản hồi cũ**: câu hỏi đồng bộ theo key ổn định, id câu hỏi giữ nguyên qua mỗi lần lưu.
+- **Grist Sheet**: mỗi form có 1 doc Grist tự tạo — bấm "Mở Sheet ↗" trên trang phản hồi để đồng bộ phần mới + mở link xem dạng bảng tính (filter/sort/formula). Submit mới tự đẩy sang Grist. Cấu hình qua `.env`: `GRIST_API_KEY`, `GRIST_PUBLIC_URL` (service `grist` chạy cạnh app trong compose).
 - Xem phản hồi 3 chế độ: **Tổng hợp** (thống kê từng câu: bar chart + %, trung bình thang đo, danh sách câu trả lời text), **Từng phản hồi** (bảng + card + modal chi tiết, tìm kiếm), **Bảng tính** (grid full-width sticky header kiểu Google Sheets). Xuất CSV (có BOM cho Excel).
 - Quản trị: dashboard, editor kéo thứ tự, publish/close, slug tùy chỉnh, rate-limit submit 10/phút/IP.
 

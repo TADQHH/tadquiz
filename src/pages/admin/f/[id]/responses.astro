@@ -2,16 +2,19 @@
 import AdminLayout from '../../../../layouts/AdminLayout.astro';
 import KpiStat from '../../../../components/kpi-stat/KpiStat.astro';
 import ResponsesTabs from '../../../../components/responses-view/ResponsesTabs.tsx';
+import GristButton from '../../../../components/grist-button/GristButton.tsx';
 import StatusBadge from '../../../../components/status-badge/StatusBadge.tsx';
 import { formatViDate } from '../../../../components/format-date/format-date';
 import { getForm } from '../../../../db/forms.mjs';
 import { listResponses } from '../../../../db/responses.mjs';
+import { gristEnabled } from '../../../../lib/grist.mjs';
 
 const id = Number.parseInt(String(Astro.params.id ?? ''), 10);
 const form = Number.isInteger(id) ? getForm(id) : null;
 if (!form) return Astro.redirect('/404');
 const rows = listResponses(form.id);
 const latest = rows[0]?.submittedAt ? formatViDate(rows[0].submittedAt) : '—';
+const showGrist = gristEnabled();
 ---
 
 <AdminLayout title={`${form.title} — Phản hồi — TADQuiz`}>
@@ -30,6 +33,7 @@ const latest = rows[0]?.submittedAt ? formatViDate(rows[0].submittedAt) : '—';
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-2">
+        {showGrist ? <GristButton client:load formId={form.id} gristUrl={form.grist?.url ?? null} /> : null}
         <a href={`/api/forms/${form.id}/responses.xlsx`} class="btn-black text-xs font-bold" download>
           Xuất Excel (.xlsx)
         </a>

@@ -5,6 +5,8 @@ services:
       dockerfile: docker/Dockerfile
     ports:
       - "${WEB_PORT:-8080}:4321"
+    env_file:
+      - .env
     environment:
       DATABASE_PATH: /data/tadquiz.sqlite
       # Set these to override the auto-generated .env (gen-env skips keys
@@ -14,6 +16,28 @@ services:
     volumes:
       - tadquiz-data:/data
     restart: unless-stopped
+    depends_on:
+      - grist
+
+  grist:
+    image: gristlabs/grist:latest
+    ports:
+      - "${GRIST_PORT:-8484}:8484"
+    volumes:
+      - grist-data:/persist
+      - grist-docs:/docs
+    environment:
+      # Api key cho TADQuiz nằm trong .env của repo (GRIST_API_KEY),
+      # tạo trong Grist UI: Account Settings → API.
+      GRIST_HOST: grist
+      GRIST_SINGLE_PORT: "true"
+      # Bảo vệ lần truy cập đầu (đặt giá trị riêng ở .env khi lên production).
+      GRIST_BOOT_KEY: ${GRIST_BOOT_KEY:-}
+      # Email này được đăng nhập tự động (dùng để provision user đầu tiên).
+      GRIST_DEFAULT_EMAIL: ${GRIST_DEFAULT_EMAIL:-}
+    restart: unless-stopped
 
 volumes:
   tadquiz-data:
+  grist-data:
+  grist-docs:

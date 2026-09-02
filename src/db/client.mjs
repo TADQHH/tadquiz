@@ -21,6 +21,10 @@ CREATE TABLE IF NOT EXISTS forms (
   title TEXT NOT NULL,
   description TEXT NOT NULL DEFAULT '',
   status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','published','closed')),
+  grist_doc_id TEXT,
+  grist_table_id TEXT,
+  grist_url TEXT,
+  grist_synced_response_id INTEGER NOT NULL DEFAULT 0,
   created_by INTEGER NOT NULL REFERENCES admins(id),
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
@@ -73,7 +77,7 @@ export function initDb(pathStr) {
   return db;
 }
 
-/** Idempotent migrations for databases created before conditional logic. */
+/** Idempotent migrations for databases created before later features. */
 function migrate(database) {
   const columns = new Set(
     database.pragma('table_info(questions)').map((col) => col.name),
@@ -88,6 +92,20 @@ function migrate(database) {
   database.exec(
     'CREATE UNIQUE INDEX IF NOT EXISTS idx_questions_form_key ON questions(form_id, key)',
   );
+
+  const formColumns = new Set(
+    database.pragma('table_info(forms)').map((col) => col.name),
+  );
+  for (const col of ['grist_doc_id', 'grist_table_id', 'grist_url']) {
+    if (!formColumns.has(col)) {
+      database.exec(`ALTER TABLE forms ADD COLUMN ${col} TEXT`);
+    }
+  }
+  if (!formColumns.has('grist_synced_response_id')) {
+    database.exec(
+      'ALTER TABLE forms ADD COLUMN grist_synced_response_id INTEGER NOT NULL DEFAULT 0',
+    );
+  }
 }
 
 export function getDb() {

@@ -33,6 +33,21 @@ const ENV_SPEC = [
   },
   { key: 'SESSION_TTL_HOURS', gen: () => '72', note: 'Admin session lifetime in hours' },
   {
+    key: 'GRIST_URL',
+    gen: () => 'http://grist:8484',
+    note: 'Base URL of the Grist server used for the "open in sheet" feature',
+  },
+  {
+    key: 'GRIST_API_KEY',
+    gen: () => '',
+    note: 'Grist API key (create in Grist user menu → API). Empty disables syncing',
+  },
+  {
+    key: 'GRIST_PUBLIC_URL',
+    gen: () => '',
+    note: 'Origin admin browsers use to open Grist (empty → reuse the app origin)',
+  },
+  {
     key: 'PUBLIC_SITE_NAME',
     gen: () => 'TADQuiz',
     note: 'Site name shown in UI',
