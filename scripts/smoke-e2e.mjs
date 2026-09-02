@@ -69,9 +69,7 @@ async function main() {
 
   // 5. PUT câu hỏi đủ 5 loại + 1 câu điều kiện (chỉ hiện khi câu 3 chọn 'A')
   const payload = {
-    title: 'E2E Khảo sát kiểm thử',
-    slug,
-    description: 'Kiểm thử tự động',
+    title: 'E2E Khảo sát kiểm thử', slug, description: 'Kiểm thử tự động',
     questions: [
       { key: 'q1', type: 'text', label: 'Tên bạn?', required: true },
       { key: 'q2', type: 'textarea', label: 'Ý kiến thêm?', maxChars: 100 },
@@ -162,6 +160,20 @@ async function main() {
   });
   const csvText2 = await csvRes2.text();
   ok('response cũ còn sau khi sửa form', csvText2.includes('Robot E2E'));
+
+  // 11c. Xuất Excel .xlsx — file zip hợp lệ (magic bytes PK) + đúng content-type
+  const xlsxRes = await fetch(`${BASE}/api/forms/${id}/responses.xlsx`, {
+    headers: { Cookie: cookie },
+  });
+  const xlsxBytes = new Uint8Array(await xlsxRes.arrayBuffer());
+  ok(
+    'XLSX xuất ra file Excel hợp lệ',
+    xlsxRes.status === 200 &&
+      (xlsxRes.headers.get('content-type') ?? '').includes(
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      ) &&
+      xlsxBytes[0] === 0x50 && xlsxBytes[1] === 0x4b,
+  );
 
 
 

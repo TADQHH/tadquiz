@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Question } from '../../lib/types';
+import { copyText } from '../../lib/clipboard';
 import { formatViDate } from '../format-date/format-date';
 import { TYPE_LABELS } from '../type-labels/type-labels';
 import { IconClose, IconChevronLeft, IconChevronRight, IconCopy } from '../icons/Icons';
@@ -33,6 +34,14 @@ export default function ResponseDetailModal({
   onNext,
 }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const [copied, setCopied] = useState<'ok' | 'fail' | null>(null);
+
+  async function copyJson() {
+    if (!row) return;
+    const ok = await copyText(JSON.stringify(row, null, 2));
+    setCopied(ok ? 'ok' : 'fail');
+    window.setTimeout(() => setCopied(null), 1600);
+  }
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -151,12 +160,10 @@ export default function ResponseDetailModal({
         <button
           type="button"
           className="btn-ghost text-xs font-bold"
-          onClick={() => {
-            void navigator.clipboard.writeText(JSON.stringify(row, null, 2));
-          }}
+          onClick={() => void copyJson()}
         >
           <IconCopy className="mr-1.5 h-3.5 w-3.5" />
-          Sao chép JSON
+          {copied === 'ok' ? 'Đã chép!' : copied === 'fail' ? 'Lỗi — chép tay' : 'Sao chép JSON'}
         </button>
         <button
           type="button"

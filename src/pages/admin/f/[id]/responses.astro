@@ -29,8 +29,11 @@ const latest = rows[0]?.submittedAt ? formatViDate(rows[0].submittedAt) : '—';
           <StatusBadge status={form.status} />
         </div>
       </div>
-      <div class="flex items-center gap-2">
-        <a href={`/api/forms/${form.id}/responses.csv`} class="btn-black text-xs font-bold" download>
+      <div class="flex flex-wrap items-center gap-2">
+        <a href={`/api/forms/${form.id}/responses.xlsx`} class="btn-black text-xs font-bold" download>
+          Xuất Excel (.xlsx)
+        </a>
+        <a href={`/api/forms/${form.id}/responses.csv`} class="btn-ghost border border-[var(--border)] text-xs font-bold" download>
           Xuất CSV
         </a>
       </div>

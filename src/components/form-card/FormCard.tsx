@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { FormSummary } from '../../lib/types';
+import { copyText } from '../../lib/clipboard';
 import { formatViDate } from '../format-date/format-date';
 import { IconCopy } from '../icons/Icons';
 import StatusBadge from '../status-badge/StatusBadge';
@@ -10,18 +11,15 @@ type Props = {
 };
 
 export default function FormCard({ form, onDelete }: Props) {
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<'ok' | 'fail' | null>(null);
 
   async function copy() {
     const url = `${location.origin}/q/${form.slug}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1600);
-    } catch {
-      setCopied(false);
-    }
+    const ok = await copyText(url);
+    setCopied(ok ? 'ok' : 'fail');
+    window.setTimeout(() => setCopied(null), 1600);
   }
+
 
   return (
     <article className="brutalist-card flex flex-col justify-between rounded-[var(--radius)] border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
@@ -44,7 +42,7 @@ export default function FormCard({ form, onDelete }: Props) {
             title="Sao chép link khảo sát"
           >
             <IconCopy className="h-3 w-3" />
-            {copied ? 'Đã chép' : 'Chép'}
+            {copied === 'ok' ? 'Đã chép' : copied === 'fail' ? 'Lỗi — chép tay' : 'Chép'}
           </button>
         </div>
         <div className="mt-3 flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
