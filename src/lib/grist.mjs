@@ -57,6 +57,7 @@ export async function createDoc(form) {
   const org = orgs[0];
   if (!org) throw new Error('Grist chưa có org nào.');
   const ws = await api(`/workspaces/${org.id}`);
+
   if (!ws || !ws.id) throw new Error('Grist chưa có workspace nào.');
   const doc = await api(`/workspaces/${ws.id}/docs`, {
     method: 'POST',
@@ -106,4 +107,14 @@ export async function addRecords(docId, records) {
     body: JSON.stringify({ records }),
   });
   return records.length;
+}
+
+/** Share the doc publicly (view-only) — anonymous visitors with the link can read. */
+export async function grantPublicView(docId) {
+  await api(`/docs/${docId}/access`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      delta: { users: { 'anon@getgrist.com': 'viewers' } },
+    }),
+  });
 }

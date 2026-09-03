@@ -40,6 +40,9 @@ services:
       GRIST_DEFAULT_EMAIL: ${GRIST_DEFAULT_EMAIL:-}
       # Canonical URL khi chạy sau reverse proxy (nginx → sheet.tad.io.vn).
       APP_HOME_URL: ${GRIST_PUBLIC_URL:-}
+      # Tắt màn hình boot-key: ai cũng xem được doc đã share public,
+      # chỉnh sửa vẫn cần đăng nhập.
+      GRIST_IN_SERVICE: "true"
     restart: unless-stopped
     networks:
       - default

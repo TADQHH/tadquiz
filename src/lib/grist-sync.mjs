@@ -8,7 +8,13 @@
 import { getForm } from '../db/forms.mjs';
 import { updateFormGrist, markGristSynced } from '../db/grist.mjs';
 import { responsesAfter } from '../db/responses.mjs';
-import { gristEnabled, createDoc, ensureTable, addRecords } from './grist.mjs';
+import {
+  gristEnabled,
+  createDoc,
+  ensureTable,
+  addRecords,
+  grantPublicView,
+} from './grist.mjs';
 
 /** Column value for one answer, shaped for Grist. */
 function cell(value) {
@@ -25,13 +31,16 @@ export async function ensureGristDoc(form, origin) {
   if (form.grist?.docId) return form;
   const docId = await createDoc(form);
   await ensureTable(docId, form, form.questions);
+  // View-only cho ai có link — khỏi cần tài khoản/boot key khi mở sheet.
+  await grantPublicView(docId);
   const gristBase =
     (process.env.GRIST_PUBLIC_URL ?? '').replace(/\/$/, '') ||
     (origin ?? '').replace(/\/$/, '');
   const grist = {
     docId,
     tableId: 'PhanHoi',
-    url: gristBase ? `${gristBase}/doc/${docId}/t/PhanHoi` : null,
+    // /o/docs/doc/... là dạng URL anonymous truy cập được khi không có subdomain.
+    url: gristBase ? `${gristBase}/o/docs/doc/${docId}/t/PhanHoi` : null,
     syncedResponseId: form.grist?.syncedResponseId ?? 0,
   };
   updateFormGrist(form.id, grist);
