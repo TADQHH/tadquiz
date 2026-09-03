@@ -125,6 +125,7 @@ export function useFormEditor(form: FormDetail) {
     completionUrl,
     setCompletionUrl,
     status,
+    questions,
     setQuestions,
     error,
     slugError,
