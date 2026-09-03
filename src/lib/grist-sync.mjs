@@ -13,6 +13,9 @@ import {
   grantPublicView,
   getPageId,
 } from './grist.mjs';
+import { getForm } from '../db/forms.mjs';
+import { updateFormGrist, markGristSynced } from '../db/grist.mjs';
+import { responsesAfter } from '../db/responses.mjs';
 
 /** Column value for one answer, shaped for Grist. */
 function cell(value) {
