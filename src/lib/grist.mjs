@@ -13,17 +13,15 @@ export function gristEnabled() {
 
 /** @param {string} path @param {RequestInit} init */
 async function api(path, init = {}) {
+  // GRIST_URL phải cùng origin với GRIST_PUBLIC_URL khi Grist chạy sau proxy
+  // (APP_HOME_URL khiến Grist chỉ chấp nhận Host khớp origin công khai;
+  // undici không cho ghi đè header Host nên phải gọi đúng origin luôn).
   const base = env('GRIST_URL', 'http://grist:8484').replace(/\/$/, '');
-  // Khi Grist đứng sau reverse proxy (APP_HOME_URL set), nó chỉ nhận Host khớp
-  // với origin công khai — call nội bộ phải ghi đè Host theo GRIST_PUBLIC_URL.
-  const publicUrl = env('GRIST_PUBLIC_URL');
-  const publicHost = publicUrl ? new URL(publicUrl).host : null;
   const res = await fetch(`${base}/api${path}`, {
     ...init,
     headers: {
       Authorization: `Bearer ${env('GRIST_API_KEY')}`,
       'Content-Type': 'application/json',
-      ...(publicHost ? { Host: publicHost } : {}),
       ...(init.headers ?? {}),
     },
   });
