@@ -5,15 +5,13 @@
  * (grist_synced_response_id) tracks which responses were already pushed, so
  * syncs are incremental and idempotent-ish (at-least-once, never re-push).
  */
-import { getForm } from '../db/forms.mjs';
-import { updateFormGrist, markGristSynced } from '../db/grist.mjs';
-import { responsesAfter } from '../db/responses.mjs';
 import {
   gristEnabled,
   createDoc,
   ensureTable,
   addRecords,
   grantPublicView,
+  getPageId,
 } from './grist.mjs';
 
 /** Column value for one answer, shaped for Grist. */
@@ -36,11 +34,15 @@ export async function ensureGristDoc(form, origin) {
   const gristBase =
     (process.env.GRIST_PUBLIC_URL ?? '').replace(/\/$/, '') ||
     (origin ?? '').replace(/\/$/, '');
+  const pageId = await getPageId(docId, 'PhanHoi');
   const grist = {
     docId,
     tableId: 'PhanHoi',
+    // /p/{pageId} mở đúng trang bảng (URL /t/... không nhảy tới trang của bảng tạo bằng API).
     // /o/docs/doc/... là dạng URL anonymous truy cập được khi không có subdomain.
-    url: gristBase ? `${gristBase}/o/docs/doc/${docId}/t/PhanHoi` : null,
+    url: gristBase
+      ? `${gristBase}/o/docs/doc/${docId}/p/${pageId ?? 'PhanHoi'}`
+      : null,
     syncedResponseId: form.grist?.syncedResponseId ?? 0,
   };
   updateFormGrist(form.id, grist);

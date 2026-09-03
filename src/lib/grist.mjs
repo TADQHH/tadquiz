@@ -118,3 +118,12 @@ export async function grantPublicView(docId) {
     }),
   });
 }
+
+/** RowId của trang (page) hiển thị bảng — /p/{id} là URL mở đúng trang đó. */
+export async function getPageId(docId, tableId) {
+  const tables = (await api(`/docs/${docId}/tables/_grist_Tables/records`)).records ?? [];
+  const t = tables.find((r) => r.fields.tableId === tableId);
+  if (!t?.fields.primaryViewId) return null;
+  const pages = (await api(`/docs/${docId}/tables/_grist_Pages/records`)).records ?? [];
+  return pages.find((r) => r.fields.viewRef === t.fields.primaryViewId)?.id ?? null;
+}
