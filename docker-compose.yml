@@ -43,6 +43,9 @@ services:
       # Tắt màn hình boot-key: ai cũng xem được doc đã share public,
       # chỉnh sửa vẫn cần đăng nhập.
       GRIST_IN_SERVICE: "true"
+      # Ép light theme: bỏ feature "themes" khỏi UI (mặc định = GristLight).
+      # Danh sách đầy đủ trừ "themes" — xem app/common/gristUrls.js Features.
+      GRIST_UI_FEATURES: "helpCenter,billing,templates,createSite,multiSite,multiAccounts,importFromAirtable,sendToDrive,tutorials,supportGrist,automations,oauthApps"
     restart: unless-stopped
     networks:
       - default
