@@ -7,6 +7,7 @@ type Props = {
   title: string;
   slug: string;
   description: string;
+  completionUrl: string;
   status: FormStatus;
   slugError?: string;
   dirty: boolean;
@@ -14,6 +15,7 @@ type Props = {
   onTitle: (value: string) => void;
   onSlug: (value: string) => void;
   onDescription: (value: string) => void;
+  onCompletionUrl: (value: string) => void;
   onSave: () => void;
   onStatus: () => void;
   onDelete: () => void;
@@ -43,6 +45,22 @@ export default function MetaPanel(props: Props) {
           value={props.description}
           onChange={(e) => props.onDescription(e.target.value)}
         />
+      </label>
+      <label className="block">
+        <span className="mb-2 block font-headline text-xs font-extrabold uppercase tracking-[0.14em]">
+          Link khi hoàn tất
+        </span>
+        <input
+          className="input-box"
+          type="url"
+          inputMode="url"
+          placeholder="https://… (bỏ trống nếu không dùng)"
+          value={props.completionUrl}
+          onChange={(e) => props.onCompletionUrl(e.target.value)}
+        />
+        <span className="mt-1 block text-xs text-[var(--muted-foreground)]">
+          Người trả lời xong sẽ thấy nút mở link này (tab mới).
+        </span>
       </label>
       <PublishBar
         status={props.status}

@@ -9,7 +9,13 @@ const KEY_PATTERN = /^[A-Za-z0-9:_-]{1,100}$/;
 export interface FormPayloadResult {
   ok: boolean
   error?: string
-  value?: { title: string; slug: string; description: string; questions: QuestionInput[] }
+  value?: {
+    title: string
+    slug: string
+    description: string
+    completionUrl: string
+    questions: QuestionInput[]
+  }
 }
 
 function checkQuestion(q: unknown): string | null {
@@ -92,6 +98,15 @@ export function validateFormPayload(input: unknown): FormPayloadResult {
   if (!slugCheck.ok) return { ok: false, error: slugCheck.error ?? 'Slug không hợp lệ.' };
 
   const description = typeof body.description === 'string' ? body.description.slice(0, 1000) : '';
+  const completionUrl = typeof body.completionUrl === 'string' ? body.completionUrl.trim() : '';
+  if (completionUrl !== '') {
+    try {
+      const parsed = new URL(completionUrl);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') throw new Error('proto');
+    } catch {
+      return { ok: false, error: 'Link hoàn tất cần là địa chỉ http(s) hợp lệ (vd: https://…).' };
+    }
+  }
   if (!Array.isArray(body.questions)) {
     return { ok: false, error: 'Thiếu danh sách câu hỏi.' };
   }
@@ -124,6 +139,6 @@ export function validateFormPayload(input: unknown): FormPayloadResult {
 
   return {
     ok: true,
-    value: { title, slug: slugCheck.slug, description, questions },
+    value: { title, slug: slugCheck.slug, description, completionUrl, questions },
   };
 }

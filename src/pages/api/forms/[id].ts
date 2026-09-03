@@ -39,7 +39,12 @@ export const PUT: APIRoute = async (context) => {
     return apiError(`Slug "${result.value.slug}" đã được dùng cho form khác.`, 409);
   }
 
-  updateFormMeta(id, result.value);
+  updateFormMeta(id, {
+    title: result.value.title,
+    slug: result.value.slug,
+    description: result.value.description,
+    completionUrl: result.value.completionUrl === '' ? null : result.value.completionUrl,
+  });
   syncQuestions(id, result.value.questions);
   const updated = getForm(id);
   return Response.json(updated);

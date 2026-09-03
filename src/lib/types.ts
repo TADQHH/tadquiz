@@ -75,13 +75,15 @@ export interface FormInput {
   title: string;
   slug: string;
   description?: string;
+  /** Optional http(s) URL opened in a new tab from the thank-you page. */
+  completionUrl?: string | null;
   questions: QuestionInput[];
 }
 
 export interface FormSummary {
   id: number;
   slug: string;
-  title: string;
+  completionUrl: string | null;
   description: string;
   status: FormStatus;
   responseCount: number;

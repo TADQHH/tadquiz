@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS forms (
   title TEXT NOT NULL,
   description TEXT NOT NULL DEFAULT '',
   status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','published','closed')),
+  completion_url TEXT,
   grist_doc_id TEXT,
   grist_table_id TEXT,
   grist_url TEXT,
@@ -100,6 +101,9 @@ function migrate(database) {
     if (!formColumns.has(col)) {
       database.exec(`ALTER TABLE forms ADD COLUMN ${col} TEXT`);
     }
+  }
+  if (!formColumns.has('completion_url')) {
+    database.exec('ALTER TABLE forms ADD COLUMN completion_url TEXT');
   }
   if (!formColumns.has('grist_synced_response_id')) {
     database.exec(

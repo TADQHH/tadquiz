@@ -66,12 +66,14 @@ export function snapshot(
   title: string,
   slug: string,
   description: string,
+  completionUrl: string,
   questions: DraftQuestion[],
 ) {
   return JSON.stringify({
     title,
     slug,
     description,
+    completionUrl,
     questions: questions.map(({ key, type, label, description: d, options, required, maxChars, logic }) => ({
       key,
       type,
@@ -84,17 +86,18 @@ export function snapshot(
     })),
   });
 }
-
 export function payloadOf(
   title: string,
   slug: string,
   description: string,
+  completionUrl: string,
   questions: DraftQuestion[],
 ) {
   return {
     title,
     slug,
     description,
+    completionUrl,
     questions: questions.map((q, i) => ({
       key: q.key,
       type: q.type,

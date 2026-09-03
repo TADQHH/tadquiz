@@ -49,6 +49,7 @@ export default function FormEditor({ form }: { form: FormDetail }) {
           title={editor.title}
           slug={editor.slug}
           description={editor.description}
+          completionUrl={editor.completionUrl}
           status={editor.status}
           slugError={editor.slugError}
           dirty={editor.dirty}
@@ -56,6 +57,7 @@ export default function FormEditor({ form }: { form: FormDetail }) {
           onTitle={editor.setTitle}
           onSlug={editor.setSlug}
           onDescription={editor.setDescription}
+          onCompletionUrl={editor.setCompletionUrl}
           onSave={() => void editor.save()}
           onStatus={() => void editor.changeStatus()}
           onDelete={() => setConfirm('form')}

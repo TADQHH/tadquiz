@@ -14,16 +14,17 @@ export function useFormEditor(form: FormDetail) {
   const [title, setTitle] = useState(form.title);
   const [slug, setSlug] = useState(form.slug);
   const [description, setDescription] = useState(form.description);
+  const [completionUrl, setCompletionUrl] = useState(form.completionUrl ?? '');
   const [status, setStatus] = useState<FormStatus>(form.status);
   const [questions, setQuestions] = useState<DraftQuestion[]>(() => fromForm(form));
   const [error, setError] = useState('');
   const [slugError, setSlugError] = useState('');
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
-  const baseline = useRef(snapshot(form.title, form.slug, form.description, fromForm(form)));
+  const baseline = useRef(snapshot(form.title, form.slug, form.description, form.completionUrl ?? '', fromForm(form)));
   const dirty = useMemo(
-    () => snapshot(title, slug, description, questions) !== baseline.current,
-    [title, slug, description, questions],
+    () => snapshot(title, slug, description, completionUrl, questions) !== baseline.current,
+    [title, slug, description, completionUrl, questions],
   );
 
   function apply(detail: FormDetail) {
@@ -31,8 +32,9 @@ export function useFormEditor(form: FormDetail) {
     setTitle(detail.title);
     setSlug(detail.slug);
     setDescription(detail.description);
+    setCompletionUrl(detail.completionUrl ?? '');
     setQuestions(next);
-    baseline.current = snapshot(detail.title, detail.slug, detail.description, next);
+    baseline.current = snapshot(detail.title, detail.slug, detail.description, detail.completionUrl ?? '', next);
   }
 
   async function save(): Promise<FormDetail | null> {
@@ -48,7 +50,7 @@ export function useFormEditor(form: FormDetail) {
       const res = await fetch(`/api/forms/${form.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payloadOf(title, slug, description, questions)),
+        body: JSON.stringify(payloadOf(title, slug, description, completionUrl.trim(), questions)),
       });
       const data = (await res.json()) as FormDetail & { error?: string };
       if (res.status === 409) {
@@ -120,8 +122,9 @@ export function useFormEditor(form: FormDetail) {
     setSlug,
     description,
     setDescription,
+    completionUrl,
+    setCompletionUrl,
     status,
-    questions,
     setQuestions,
     error,
     slugError,

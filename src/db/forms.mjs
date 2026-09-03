@@ -133,17 +133,16 @@ export function updateFormMeta(id, meta) {
   const current = db.prepare('SELECT * FROM forms WHERE id = ?').get(id);
   if (!current) return false;
   db.prepare(
-    "UPDATE forms SET title = ?, slug = ?, description = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?",
+    "UPDATE forms SET title = ?, slug = ?, description = ?, completion_url = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?",
   ).run(
     meta.title ?? current.title,
     meta.slug ?? current.slug,
     meta.description ?? current.description,
+    meta.completionUrl ?? current.completion_url ?? null,
     id,
   );
   return true;
 }
-
-/** @param {number} id @param {'draft'|'published'|'closed'} status */
 export function setStatus(id, status) {
   const info = getDb()
     .prepare(
