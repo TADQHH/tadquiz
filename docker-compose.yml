@@ -18,6 +18,9 @@ services:
     restart: unless-stopped
     depends_on:
       - grist
+    networks:
+      - default
+      - clueoj_nginx
 
   grist:
     image: gristlabs/grist:latest
@@ -35,9 +38,20 @@ services:
       GRIST_BOOT_KEY: ${GRIST_BOOT_KEY:-}
       # Email này được đăng nhập tự động (dùng để provision user đầu tiên).
       GRIST_DEFAULT_EMAIL: ${GRIST_DEFAULT_EMAIL:-}
+      # Canonical URL khi chạy sau reverse proxy (nginx → sheet.tad.io.vn).
+      APP_HOME_URL: ${GRIST_PUBLIC_URL:-}
     restart: unless-stopped
+    networks:
+      - default
+      - clueoj_nginx
 
 volumes:
   tadquiz-data:
   grist-data:
   grist-docs:
+
+networks:
+  default:
+    name: tadquiz_default
+  clueoj_nginx:
+    external: true
