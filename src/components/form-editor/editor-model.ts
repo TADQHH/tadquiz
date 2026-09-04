@@ -86,7 +86,7 @@ export function snapshot(
       maxChars,
       logic,
     })),
-  };
+  });
 }
 
 export function payloadOf(
