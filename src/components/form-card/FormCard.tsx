@@ -24,7 +24,10 @@ export default function FormCard({ form, onDelete }: Props) {
   async function clone() {
     setCloning(true);
     try {
-      const res = await fetch(`/api/forms/${form.id}/clone`, { method: 'POST' });
+      const res = await fetch(`/api/forms/${form.id}/clone`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
       const data = (await res.json()) as { id?: number; error?: string };
       if (!res.ok || !data.id) throw new Error(data.error ?? 'lỗi');
       location.href = `/admin/f/${data.id}`;
