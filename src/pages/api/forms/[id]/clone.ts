@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
-import { apiError, getAdminSession } from '../../../lib/http';
-import { getForm } from '../../../db/forms.mjs';
-import { cloneForm } from '../../../db/clone.mjs';
+import { apiError, getAdminSession } from '../../../../lib/http';
+import { getForm } from '../../../../db/forms.mjs';
+import { cloneForm } from '../../../../db/clone.mjs';
 
 function parseId(raw: string | undefined): number | null {
   const id = Number.parseInt(String(raw ?? ''), 10);
