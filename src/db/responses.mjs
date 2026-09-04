@@ -72,3 +72,8 @@ export function responseStats(formId) {
     .get(formId);
   return { total: row.total, latest: row.latest ?? null };
 }
+
+/** Number of responses received for a form — used to enforce response limits. */
+export function countResponses(formId) {
+  return getDb().prepare('SELECT COUNT(*) AS n FROM responses WHERE form_id = ?').get(formId).n;
+}

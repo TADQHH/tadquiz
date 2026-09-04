@@ -16,7 +16,8 @@ import {
   updateFormMeta,
   deleteForm,
 } from '../../src/db/forms.mjs';
-import { insertResponse, listResponses, responseStats } from '../../src/db/responses.mjs';
+import { insertResponse, listResponses, responseStats, countResponses } from '../../src/db/responses.mjs';
+import { cloneForm } from '../../src/db/clone.mjs';
 
 let dir: string;
 

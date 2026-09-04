@@ -14,7 +14,7 @@ export interface FormPayloadResult {
     slug: string
     description: string
     completionUrl: string
-    questions: QuestionInput[]
+    responseLimit: number | null
   }
 }
 
@@ -99,6 +99,14 @@ export function validateFormPayload(input: unknown): FormPayloadResult {
 
   const description = typeof body.description === 'string' ? body.description.slice(0, 1000) : '';
   const completionUrl = typeof body.completionUrl === 'string' ? body.completionUrl.trim() : '';
+  let responseLimit: number | null = null;
+  if (body.responseLimit !== undefined && body.responseLimit !== null && body.responseLimit !== '') {
+    const n = Number(body.responseLimit);
+    if (!Number.isInteger(n) || n < 1 || n > 1_000_000) {
+      return { ok: false, error: 'Giới hạn phản hồi phải là số nguyên từ 1 đến 1.000.000 (bỏ trống = không giới hạn).' };
+    }
+    responseLimit = n;
+  }
   if (completionUrl !== '') {
     try {
       const parsed = new URL(completionUrl);
@@ -139,6 +147,6 @@ export function validateFormPayload(input: unknown): FormPayloadResult {
 
   return {
     ok: true,
-    value: { title, slug: slugCheck.slug, description, completionUrl, questions },
+    value: { title, slug: slugCheck.slug, description, completionUrl, responseLimit, questions },
   };
 }

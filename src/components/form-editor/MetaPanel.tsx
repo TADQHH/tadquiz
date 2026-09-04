@@ -8,6 +8,8 @@ type Props = {
   slug: string;
   description: string;
   completionUrl: string;
+  responseLimit: string;
+  responseCount: number;
   status: FormStatus;
   slugError?: string;
   dirty: boolean;
@@ -16,6 +18,7 @@ type Props = {
   onSlug: (value: string) => void;
   onDescription: (value: string) => void;
   onCompletionUrl: (value: string) => void;
+  onResponseLimit: (value: string) => void;
   onSave: () => void;
   onStatus: () => void;
   onDelete: () => void;
@@ -60,6 +63,24 @@ export default function MetaPanel(props: Props) {
         />
         <span className="mt-1 block text-xs text-[var(--muted-foreground)]">
           Người trả lời xong sẽ thấy nút mở link này (tab mới).
+        </span>
+      </label>
+      <label className="block">
+        <span className="mb-2 block font-headline text-xs font-extrabold uppercase tracking-[0.14em]">
+          Giới hạn phản hồi
+        </span>
+        <input
+          className="input-box"
+          type="number"
+          min={1}
+          max={1000000}
+          inputMode="numeric"
+          placeholder="Bỏ trống = không giới hạn"
+          value={props.responseLimit}
+          onChange={(e) => props.onResponseLimit(e.target.value)}
+        />
+        <span className="mt-1 block text-xs text-[var(--muted-foreground)]">
+          Form tự ngừng nhận phản hồi khi đủ số lượt. {props.responseCount} đã nhận.
         </span>
       </label>
       <PublishBar

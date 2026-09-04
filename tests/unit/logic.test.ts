@@ -157,3 +157,19 @@ test('form payload: op không cần value được chuẩn hóa không có value
   assert.equal(ok.ok, true);
   if (ok.ok && ok.value) assert.deepEqual(ok.value.questions[1].logic, { questionKey: 'q1', op: 'answered' });
 });
+
+test('form payload: responseLimit hợp lệ / rác bị chặn', () => {
+  const ok = validateFormPayload({ title: 'T', slug: 'test-form', responseLimit: 50, questions: [] });
+  assert.equal(ok.ok, true);
+  if (ok.ok && ok.value) assert.equal(ok.value.responseLimit, 50);
+
+  const unlimited = validateFormPayload({ title: 'T', slug: 'test-form', responseLimit: null, questions: [] });
+  assert.equal(unlimited.ok, true);
+
+  const frac = validateFormPayload({ title: 'T', slug: 'test-form', responseLimit: 1.5, questions: [] });
+  assert.equal(frac.ok, false);
+  if (!frac.ok) assert.match(frac.error ?? '', /Giới hạn phản hồi/);
+
+  const big = validateFormPayload({ title: 'T', slug: 'test-form', responseLimit: 2_000_000, questions: [] });
+  assert.equal(big.ok, false);
+});

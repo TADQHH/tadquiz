@@ -12,12 +12,26 @@ type Props = {
 
 export default function FormCard({ form, onDelete }: Props) {
   const [copied, setCopied] = useState<'ok' | 'fail' | null>(null);
+  const [cloning, setCloning] = useState(false);
 
   async function copy() {
     const url = `${location.origin}/q/${form.slug}`;
     const ok = await copyText(url);
     setCopied(ok ? 'ok' : 'fail');
     window.setTimeout(() => setCopied(null), 1600);
+  }
+
+  async function clone() {
+    setCloning(true);
+    try {
+      const res = await fetch(`/api/forms/${form.id}/clone`, { method: 'POST' });
+      const data = (await res.json()) as { id?: number; error?: string };
+      if (!res.ok || !data.id) throw new Error(data.error ?? 'lỗi');
+      location.href = `/admin/f/${data.id}`;
+    } catch {
+      setCloning(false);
+      alert('Không nhân bản được form — thử lại.');
+    }
   }
 
 
@@ -63,8 +77,17 @@ export default function FormCard({ form, onDelete }: Props) {
           href={`/admin/f/${form.id}/responses`}
           className="btn-ghost flex min-h-10 items-center justify-center border border-[var(--border)] text-center text-xs font-bold hover:border-[var(--tad-ink)]"
         >
-          Phản hồi ({form.responseCount})
+          Phản hồi ({form.responseCount}
+          {form.responseLimit != null ? `/${form.responseLimit}` : ''})
         </a>
+        <button
+          type="button"
+          className="btn-ghost col-span-2 flex min-h-9 items-center justify-center border border-[var(--border)] text-center text-xs font-bold hover:border-[var(--tad-red)]"
+          onClick={() => void clone()}
+          disabled={cloning}
+        >
+          {cloning ? 'Đang nhân bản…' : 'Nhân bản thành bản sao'}
+        </button>
         <button
           type="button"
           className="col-span-2 inline-flex min-h-9 items-center justify-center text-xs font-medium text-[var(--muted-foreground)] hover:text-[var(--tad-red)]"

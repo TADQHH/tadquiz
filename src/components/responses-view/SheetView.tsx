@@ -60,10 +60,12 @@ export default function SheetView({ questions, rows }: { questions: Question[]; 
                 return (
                   <td
                     key={question.id}
-                    className="max-w-[16rem] truncate whitespace-nowrap px-3 py-2 text-xs"
-                    title={text}
+                    className="max-w-[16rem] px-3 py-2 align-top"
+                    title={text.length > 120 ? text : undefined}
                   >
-                    {text}
+                    <span className="line-clamp-3 whitespace-pre-wrap break-words text-xs">
+                      {text}
+                    </span>
                   </td>
                 );
               })}

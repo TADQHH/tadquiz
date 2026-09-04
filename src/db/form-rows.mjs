@@ -23,7 +23,7 @@ export function rowToForm(row, questions = []) {
     title: row.title,
     description: row.description,
     status: row.status,
-    completionUrl: row.completion_url ?? null,
+    responseLimit: row.response_limit ?? null,
     responseCount: row.response_count ?? 0,
     questionCount: row.question_count ?? questions.length,
     createdAt: row.created_at,

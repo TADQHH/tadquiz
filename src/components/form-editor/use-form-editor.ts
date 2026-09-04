@@ -9,22 +9,28 @@ import {
   statusAction,
   type DraftQuestion,
 } from './editor-model';
+function limitOf(detail: FormDetail): string {
+  return detail.responseLimit == null ? '' : String(detail.responseLimit);
+}
 
 export function useFormEditor(form: FormDetail) {
   const [title, setTitle] = useState(form.title);
   const [slug, setSlug] = useState(form.slug);
   const [description, setDescription] = useState(form.description);
   const [completionUrl, setCompletionUrl] = useState(form.completionUrl ?? '');
+  const [responseLimit, setResponseLimit] = useState(form.responseLimit == null ? '' : String(form.responseLimit));
   const [status, setStatus] = useState<FormStatus>(form.status);
   const [questions, setQuestions] = useState<DraftQuestion[]>(() => fromForm(form));
   const [error, setError] = useState('');
   const [slugError, setSlugError] = useState('');
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
-  const baseline = useRef(snapshot(form.title, form.slug, form.description, form.completionUrl ?? '', fromForm(form)));
+  const baseline = useRef(
+    snapshot(form.title, form.slug, form.description, form.completionUrl ?? '', limitOf(form), fromForm(form)),
+  );
   const dirty = useMemo(
-    () => snapshot(title, slug, description, completionUrl, questions) !== baseline.current,
-    [title, slug, description, completionUrl, questions],
+    () => snapshot(title, slug, description, completionUrl, responseLimit, questions) !== baseline.current,
+    [title, slug, description, completionUrl, responseLimit, questions],
   );
 
   function apply(detail: FormDetail) {
@@ -33,8 +39,9 @@ export function useFormEditor(form: FormDetail) {
     setSlug(detail.slug);
     setDescription(detail.description);
     setCompletionUrl(detail.completionUrl ?? '');
+    setResponseLimit(limitOf(detail));
     setQuestions(next);
-    baseline.current = snapshot(detail.title, detail.slug, detail.description, detail.completionUrl ?? '', next);
+    baseline.current = snapshot(detail.title, detail.slug, detail.description, detail.completionUrl ?? '', limitOf(detail), next);
   }
 
   async function save(): Promise<FormDetail | null> {
@@ -50,7 +57,7 @@ export function useFormEditor(form: FormDetail) {
       const res = await fetch(`/api/forms/${form.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payloadOf(title, slug, description, completionUrl.trim(), questions)),
+        body: JSON.stringify(payloadOf(title, slug, description, completionUrl.trim(), responseLimit.trim(), questions)),
       });
       const data = (await res.json()) as FormDetail & { error?: string };
       if (res.status === 409) {
@@ -124,10 +131,10 @@ export function useFormEditor(form: FormDetail) {
     setDescription,
     completionUrl,
     setCompletionUrl,
+    responseLimit,
+    setResponseLimit,
     status,
     questions,
-    setQuestions,
-    error,
     slugError,
     saved,
     saving,

@@ -44,6 +44,7 @@ export const PUT: APIRoute = async (context) => {
     slug: result.value.slug,
     description: result.value.description,
     completionUrl: result.value.completionUrl === '' ? null : result.value.completionUrl,
+    responseLimit: result.value.responseLimit,
   });
   syncQuestions(id, result.value.questions);
   const updated = getForm(id);

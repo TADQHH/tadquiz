@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { apiError, readJson } from '../../../../lib/http';
 import { getFormBySlug } from '../../../../db/forms.mjs';
-import { insertResponse } from '../../../../db/responses.mjs';
+import { insertResponse, countResponses } from '../../../../db/responses.mjs';
 import { validateAnswers } from '../../../../lib/validate';
 import { visibleQuestions } from '../../../../lib/logic';
 import { checkRate } from '../../../../lib/ratelimit.mjs';
@@ -15,6 +15,9 @@ export const POST: APIRoute = async ({ params, request, clientAddress }) => {
   const form = getFormBySlug(slug);
   if (!form) return apiError('Không tìm thấy form.', 404);
   if (form.status !== 'published') return apiError('Form này hiện không nhận phản hồi.', 403);
+  if (form.responseLimit != null && countResponses(form.id) >= form.responseLimit) {
+    return apiError('Form đã đủ số lượt phản hồi.', 403);
+  }
 
   const body = await readJson<{ answers?: Record<string, unknown> }>(request);
   if (!body || typeof body.answers !== 'object' || body.answers === null) {

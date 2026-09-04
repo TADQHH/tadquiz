@@ -58,7 +58,7 @@ export default function AnswerDisplay({
   }
 
   return (
-    <div className="whitespace-pre-wrap rounded border border-[var(--border)] bg-[var(--tad-paper)] p-3 text-xs leading-relaxed text-[var(--tad-ink)]">
+    <div className="max-h-64 overflow-y-auto whitespace-pre-wrap break-words rounded border border-[var(--border)] bg-[var(--tad-paper)] p-3 text-xs leading-relaxed text-[var(--tad-ink)]">
       {String(value)}
     </div>
   );

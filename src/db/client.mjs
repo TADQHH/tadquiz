@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS forms (
   description TEXT NOT NULL DEFAULT '',
   status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','published','closed')),
   completion_url TEXT,
+  response_limit INTEGER,
   grist_doc_id TEXT,
   grist_table_id TEXT,
   grist_url TEXT,
@@ -104,6 +105,9 @@ function migrate(database) {
   }
   if (!formColumns.has('completion_url')) {
     database.exec('ALTER TABLE forms ADD COLUMN completion_url TEXT');
+  }
+  if (!formColumns.has('response_limit')) {
+    database.exec('ALTER TABLE forms ADD COLUMN response_limit INTEGER');
   }
   if (!formColumns.has('grist_synced_response_id')) {
     database.exec(

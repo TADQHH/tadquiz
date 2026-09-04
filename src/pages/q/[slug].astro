@@ -5,10 +5,24 @@ import { getFormBySlug } from '../../db/forms.mjs';
 
 const form = getFormBySlug(Astro.params.slug ?? '');
 if (!form || form.status !== 'published') return Astro.redirect('/404');
+const full =
+  form.responseLimit != null && form.responseCount >= form.responseLimit;
 ---
 
 <PublicLayout title={`${form.title} — TADQuiz`} description={form.description || form.title}>
-  <main id="main">
-    <QuizStepper client:load form={form} />
+  <main id="main" class="page-shell flex min-h-[70dvh] items-center justify-center py-16">
+    {full ? (
+      <article class="w-full max-w-lg border-2 border-[var(--tad-black)] bg-[var(--card)] p-8 text-center shadow-[8px_8px_0_var(--tad-red)]">
+        <p class="eyebrow">Hết lượt</p>
+        <h1 class="section-title">Đã đủ số lượt phản hồi</h1>
+        <p class="lede mx-auto">
+          Form “{form.title}” đã nhận đủ {form.responseLimit} phản hồi. Cảm ơn bạn đã quan tâm!
+        </p>
+      </article>
+    ) : (
+      <div class="w-full">
+        <QuizStepper client:load form={form} />
+      </div>
+    )}
   </main>
 </PublicLayout>

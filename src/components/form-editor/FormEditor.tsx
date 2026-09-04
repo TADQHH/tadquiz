@@ -50,6 +50,8 @@ export default function FormEditor({ form }: { form: FormDetail }) {
           slug={editor.slug}
           description={editor.description}
           completionUrl={editor.completionUrl}
+          responseLimit={editor.responseLimit}
+          responseCount={form.responseCount}
           status={editor.status}
           slugError={editor.slugError}
           dirty={editor.dirty}
@@ -58,6 +60,7 @@ export default function FormEditor({ form }: { form: FormDetail }) {
           onSlug={editor.setSlug}
           onDescription={editor.setDescription}
           onCompletionUrl={editor.setCompletionUrl}
+          onResponseLimit={editor.setResponseLimit}
           onSave={() => void editor.save()}
           onStatus={() => void editor.changeStatus()}
           onDelete={() => setConfirm('form')}

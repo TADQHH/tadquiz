@@ -67,6 +67,7 @@ export function snapshot(
   slug: string,
   description: string,
   completionUrl: string,
+  responseLimit: string,
   questions: DraftQuestion[],
 ) {
   return JSON.stringify({
@@ -74,6 +75,7 @@ export function snapshot(
     slug,
     description,
     completionUrl,
+    responseLimit,
     questions: questions.map(({ key, type, label, description: d, options, required, maxChars, logic }) => ({
       key,
       type,
@@ -84,13 +86,15 @@ export function snapshot(
       maxChars,
       logic,
     })),
-  });
+  };
 }
+
 export function payloadOf(
   title: string,
   slug: string,
   description: string,
   completionUrl: string,
+  responseLimit: string,
   questions: DraftQuestion[],
 ) {
   return {
@@ -98,6 +102,7 @@ export function payloadOf(
     slug,
     description,
     completionUrl,
+    responseLimit: responseLimit === '' ? null : Number(responseLimit),
     questions: questions.map((q, i) => ({
       key: q.key,
       type: q.type,

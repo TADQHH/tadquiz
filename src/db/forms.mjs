@@ -125,20 +125,27 @@ export function listForms() {
 }
 
 /**
+ * Explicit-field update: keys present in meta win (null clears), absent keys
+ * keep their current value — this lets the editor clear a field back to null.
  * @param {number} id
- * @param {{title?:string,slug?:string,description?:string}} meta
+ * @param {{title?:string,slug?:string,description?:string,completionUrl?:string|null,responseLimit?:number|null}} meta
  */
 export function updateFormMeta(id, meta) {
   const db = getDb();
   const current = db.prepare('SELECT * FROM forms WHERE id = ?').get(id);
   if (!current) return false;
+  const completionUrl =
+    'completionUrl' in meta ? meta.completionUrl || null : current.completion_url ?? null;
+  const responseLimit =
+    'responseLimit' in meta ? meta.responseLimit ?? null : current.response_limit ?? null;
   db.prepare(
-    "UPDATE forms SET title = ?, slug = ?, description = ?, completion_url = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?",
+    "UPDATE forms SET title = ?, slug = ?, description = ?, completion_url = ?, response_limit = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?",
   ).run(
     meta.title ?? current.title,
     meta.slug ?? current.slug,
     meta.description ?? current.description,
-    meta.completionUrl ?? current.completion_url ?? null,
+    completionUrl,
+    responseLimit,
     id,
   );
   return true;
